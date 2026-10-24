@@ -17,7 +17,7 @@ import sys
 from pathlib import Path
 
 ENGINE = Path(__file__).resolve().parent
-ITEMS = ("CLAUDE.md", "docs", "tools", ".claude", ".github", ".gitignore", ".env.example")
+PAYLOAD = ENGINE / "template"  # wszystko, co trafia do projektu
 SKIP = {"__pycache__", "settings.local.json", ".DS_Store"}
 KEEP_PROJECT = (".env.example",)
 WORKFLOWS = ".github/workflows/"
@@ -25,14 +25,9 @@ ENC = {"encoding": "utf-8", "errors": "surrogateescape"}  # obce kodowanie przec
 
 
 def engine_paths():
-    for item in ITEMS:
-        p = ENGINE / item
-        if p.is_file():
-            yield p
-        elif p.is_dir():
-            for f in sorted(p.rglob("*")):
-                if not SKIP & set(f.relative_to(ENGINE).parts) and f.suffix != ".pyc":
-                    yield f
+    for f in sorted(PAYLOAD.rglob("*")):
+        if not SKIP & set(f.relative_to(PAYLOAD).parts) and f.suffix != ".pyc":
+            yield f
 
 
 def git(target, *args):
@@ -53,7 +48,7 @@ def refusals(target, paths):
         if git(target, "rev-parse", "-q", "--verify", "HEAD") and git(target, "rev-parse", "--abbrev-ref", "HEAD") in ("main", "master"):
             out.append("repo stoi na głównej gałęzi — najpierw: git switch -c docs/adoption")
     for src in paths:
-        dst = target / src.relative_to(ENGINE)
+        dst = target / src.relative_to(PAYLOAD)
         if Path(str(dst) + ".pre-kit").exists():
             out.append(f"został {dst.relative_to(target)}.pre-kit z poprzedniej instalacji — najpierw go scal")
         if dst.exists() and dst.is_dir() != src.is_dir():
@@ -86,7 +81,7 @@ def main(argv):
     new = same = appended = 0
     kept, moved = [], []
     for src in paths:
-        rel = src.relative_to(ENGINE)
+        rel = src.relative_to(PAYLOAD)
         dst = target / rel
         if src.is_dir():
             dst.mkdir(parents=True, exist_ok=True)

@@ -1,35 +1,9 @@
-# Sekrety (wzorzec zmiennych: .env.example)
+# Repo trybik-engine (ładunek dla projektów: template/.gitignore)
+__pycache__/
+*.py[cod]
 .env
 .env.*
 !.env.example
-
-# Logi
 *.log
-logs/
-
-# Python
-__pycache__/
-*.py[cod]
-.venv/
-venv/
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
-.coverage
-htmlcov/
-
-# Node
-node_modules/
-
-# Build
-dist/
-build/
-*.egg-info/
-
-# Edytory / system
-.idea/
-.vscode/
 .DS_Store
-
-# Claude Code: ustawienia prywatne (wspólne są w .claude/settings.json)
 .claude/settings.local.json

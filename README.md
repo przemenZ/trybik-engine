@@ -67,7 +67,7 @@ git clone https://github.com/przemenZ/trybik-engine.git
 cd trybik-engine
 ```
 
-Dalej wybierz scenariusz poniżej. Instalator kopiuje do projektu `CLAUDE.md`, `docs/`, `tools/`, `.claude/`, `.github/`, `.gitignore` i `.env.example`. Pliki `README.md`, `AUTOMATION-PROPOSALS.md`, `LICENSE` i `install.py` zostają w repozytorium trybik-engine.
+Dalej wybierz scenariusz poniżej. Instalator kopiuje do projektu zawartość katalogu `template/` (`CLAUDE.md`, `docs/`, `tools/`, `.claude/`, `.github/`, `.gitignore`, `.env.example`). Reszta repozytorium (README, testy, `install.py`) to sam trybik-engine i zostaje na miejscu.
 
 ### Nowy projekt
 
@@ -82,7 +82,7 @@ git add -A && git commit -m "chore: trybik-engine"
 gh repo create nowy-projekt --private --source=. --push
 ```
 
-Następnie w Claude Code napisz **„zacznij projekt”**. Agent poprowadzi [`docs/runbooks/kickoff.md`](docs/runbooks/kickoff.md):
+Następnie w Claude Code napisz **„zacznij projekt”**. Agent poprowadzi [`docs/runbooks/kickoff.md`](template/docs/runbooks/kickoff.md):
 
 > wizja → stos (ADR-0001) → architektura → spece funkcji → T-001 szkielet aplikacji → tickety funkcji
 
@@ -95,7 +95,7 @@ Legacy, zaczątek aplikacji albo zbiór dokumentów. Kod zostaje tam, gdzie jest
 1. W projekcie wszystko jest zacommitowane, potem `git switch -c docs/adoption`.
 2. Z katalogu trybik-engine uruchom `python3 install.py ../projekt`.
 3. Dokumenty projektu spoza repo (notatki, PDF, docx) skopiuj do `docs/sources/`. Tylko dokumenty, nie kod. Wpisz nazwę projektu w `CLAUDE.md`.
-4. W Claude Code napisz **„przejmij projekt”**. Agent poprowadzi [`docs/runbooks/adoption.md`](docs/runbooks/adoption.md):
+4. W Claude Code napisz **„przejmij projekt”**. Agent poprowadzi [`docs/runbooks/adoption.md`](template/docs/runbooks/adoption.md):
 
 > inwentaryzacja → wizja → stos → architektura z kodu → T-001 podpięcie procesu (komendy, CI) → tickety
 
@@ -294,7 +294,7 @@ Tak. Automaty dotyczą sesji Claude Code. Dokumenty, szablony i `docs_check.py` 
 <details>
 <summary><b>Kiedy agent się zatrzymuje?</b></summary>
 
-Gdy warstwa A jest niejednoznaczna albo dwa dokumenty się wykluczają, gdy potrzebna jest praca poza zakresem lub `allow`, gdy poprawka po review albo testach nie przechodzi po pierwszej próbie, i przed nową decyzją trudną do odwrócenia (wtedy najpierw powstaje ADR). Szczegóły: [`docs/runbooks/delivery.md`](docs/runbooks/delivery.md).
+Gdy warstwa A jest niejednoznaczna albo dwa dokumenty się wykluczają, gdy potrzebna jest praca poza zakresem lub `allow`, gdy poprawka po review albo testach nie przechodzi po pierwszej próbie, i przed nową decyzją trudną do odwrócenia (wtedy najpierw powstaje ADR). Szczegóły: [`docs/runbooks/delivery.md`](template/docs/runbooks/delivery.md).
 
 </details>
 
@@ -317,19 +317,19 @@ Szczegóły i uzasadnienia: [`AUTOMATION-PROPOSALS.md`](AUTOMATION-PROPOSALS.md)
 
 | Dokument | Zawartość |
 |---|---|
-| [`docs/PROCESS.md`](docs/PROCESS.md) | proces, mapa dokumentów, cykl życia ticketu, Definition of Done, git |
-| [`docs/runbooks/kickoff.md`](docs/runbooks/kickoff.md) | start projektu od zera |
-| [`docs/runbooks/adoption.md`](docs/runbooks/adoption.md) | przejęcie istniejącego projektu |
-| [`docs/runbooks/delivery.md`](docs/runbooks/delivery.md) | dostarczanie ticketu: role, kroki, STOP, oszczędność kontekstu |
-| [`docs/templates/`](docs/templates/) | szablony: spec, ticket, ADR, architektura, produkt |
+| [`docs/PROCESS.md`](template/docs/PROCESS.md) | proces, mapa dokumentów, cykl życia ticketu, Definition of Done, git |
+| [`docs/runbooks/kickoff.md`](template/docs/runbooks/kickoff.md) | start projektu od zera |
+| [`docs/runbooks/adoption.md`](template/docs/runbooks/adoption.md) | przejęcie istniejącego projektu |
+| [`docs/runbooks/delivery.md`](template/docs/runbooks/delivery.md) | dostarczanie ticketu: role, kroki, STOP, oszczędność kontekstu |
+| [`docs/templates/`](template/docs/templates/) | szablony: spec, ticket, ADR, architektura, produkt |
 | [`AUTOMATION-PROPOSALS.md`](AUTOMATION-PROPOSALS.md) | wdrożone automaty i kolejne propozycje |
 
 ## Współtworzenie
 
-Zgłoszenia i pull requesty są mile widziane. Przy zmianie procesu opisz problem, który rozwiązuje, najlepiej na przykładzie z praktyki. Przed wysłaniem PR uruchom:
+Zgłoszenia i pull requesty są mile widziane. Przy zmianie procesu opisz problem, który rozwiązuje, najlepiej na przykładzie z praktyki. Zasady pracy nad samym trybik-engine są w [`CLAUDE.md`](CLAUDE.md) w korzeniu repo, a decyzje z przeglądów w [`dev/`](dev/). Przed wysłaniem PR uruchom testy:
 
 ```bash
-bash tools/ci.sh
+python3 -m unittest discover -s tests -v
 ```
 
 ## Licencja
