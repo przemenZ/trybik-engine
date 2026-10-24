@@ -1,6 +1,6 @@
 # Start projektu od zera
 
-Kiedy: brak `docs/product/vision.md`, a poza kitem repo jest puste (jest kod lub dokumenty projektu → `adoption.md`). Ma pierwszeństwo przed „Dostarcz kolejny feature” z `CLAUDE.md`.
+Kiedy: brak `docs/product/vision.md`, a poza plikami trybik-engine repo jest puste (jest kod lub dokumenty projektu → `adoption.md`). Ma pierwszeństwo przed „Dostarcz kolejny feature” z `CLAUDE.md`.
 Cel: dojść do pierwszych ticketów funkcji `ready`, mając wizję, stos, architekturę i działający szkielet aplikacji, na którym kolejne tickety się wzorują.
 
 Zasady:
@@ -10,7 +10,7 @@ Zasady:
 - Git: kroki 1–5 (do akceptacji T-001) na branchu `docs/kickoff`; potem PR, `bash tools/ci.sh` (PR z samą dokumentacją nie uruchamia CI na GitHubie) i `gh pr merge --squash`. T-001 i dalej — branch wg ticketu.
 
 ## 0. Właściciel (ręcznie, przed sesją)
-Instaluje kit (`README.md` kitu, `install.py`), wpisuje nazwę w `CLAUDE.md`, `git init`, pierwszy commit na `main` (hook git przepuszcza pierwszy commit; każdy następny idzie na branchu), repo na GitHubie: `gh repo create <nazwa> --private --source=. --push`.
+Instaluje trybik-engine (`README.md` i `install.py` z repo trybik-engine), wpisuje nazwę w `CLAUDE.md`, `git init`, pierwszy commit na `main` (hook git przepuszcza pierwszy commit; każdy następny idzie na branchu), repo na GitHubie: `gh repo create <nazwa> --private --source=. --push`.
 
 ## 1. Wizja → `docs/product/vision.md`
 Z `docs/templates/product.md`. Rozmowa z właścicielem: problem, użytkownicy, cele, poza zakresem, MVP, ograniczenia, słownik pojęć. Zakres MVP to lista funkcji (każda dostanie spec), nie ticketów.

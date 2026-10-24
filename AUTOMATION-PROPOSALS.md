@@ -1,8 +1,8 @@
 # Propozycje automatyzacji
 
-Plik poza `docs/` — dotyczy kitu, nie kopiuje się do projektu. Kolejność = rekomendowana kolejność wdrażania.
+Plik poza `docs/` — dotyczy trybik-engine, nie kopiuje się do projektu. Kolejność = rekomendowana kolejność wdrażania.
 
-**Wdrożone w kicie** (`.claude/`, oznaczone ✔ niżej): hook `Stop` (docs_check), hook git (commit/scalanie na `main`/`master`, force push, bramka CI przy `gh pr merge`), CI (`tools/ci.sh` + `.github/workflows/ci.yml`), uprawnienia (`.env`, `BACKLOG.md`, potwierdzanie destrukcyjnych komend), agenci `implementer` (z hookiem scope guard), `tester` i `reviewer`, skille `/deliver` i `/ticket` (z `docs_check.py --new`). Reszta to nadal propozycje.
+**Wdrożone w trybik-engine** (`.claude/`, oznaczone ✔ niżej): hook `Stop` (docs_check), hook git (commit/scalanie na `main`/`master`, force push, bramka CI przy `gh pr merge`), CI (`tools/ci.sh` + `.github/workflows/ci.yml`), uprawnienia (`.env`, `BACKLOG.md`, potwierdzanie destrukcyjnych komend), agenci `implementer` (z hookiem scope guard), `tester` i `reviewer`, skille `/deliver` i `/ticket` (z `docs_check.py --new`). Reszta to nadal propozycje.
 
 ## Jak działa Claude Code (tyle, ile potrzeba)
 - **CLAUDE.md** — ładowany na starcie sesji; też z podkatalogów, gdy agent pracuje w nich (stąd reguły modułów w `moduł/CLAUDE.md`). To tylko tekst: agent może go zignorować.

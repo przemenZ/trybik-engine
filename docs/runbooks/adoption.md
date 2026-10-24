@@ -1,6 +1,6 @@
 # Przejęcie istniejącego projektu
 
-Kiedy: brak `docs/product/vision.md`, a w repo jest już kod projektu albo dokumenty o nim (legacy, zaczątek aplikacji, zbiór dokumentów — także ich mieszanka). Repo bez niczego poza kitem → `kickoff.md`.
+Kiedy: brak `docs/product/vision.md`, a w repo jest już kod projektu albo dokumenty o nim (legacy, zaczątek aplikacji, zbiór dokumentów — także ich mieszanka). Repo bez niczego poza plikami trybik-engine → `kickoff.md`.
 Cel: jak w `kickoff.md` (wizja, stos, architektura, T-001, pierwsze tickety `ready`), ale z tego, co już jest, a nie od zera.
 
 Zasady:
@@ -13,7 +13,7 @@ Zasady:
 - Git: kroki 1–7 (do akceptacji T-001) na branchu `docs/adoption`; potem PR, `bash tools/ci.sh`, `gh pr merge --squash`. T-001 i dalej — branch wg ticketu.
 
 ## 0. Właściciel (ręcznie, przed sesją)
-Wg `README.md` kitu, „Istniejący projekt”: instalacja kitu na branchu `docs/adoption`, dokumenty spoza repo (notatki, PDF, docx) w `docs/sources/`, nazwa projektu w `CLAUDE.md`.
+Wg `README.md` trybik-engine, „Istniejący projekt”: instalacja trybik-engine na branchu `docs/adoption`, dokumenty spoza repo (notatki, PDF, docx) w `docs/sources/`, nazwa projektu w `CLAUDE.md`.
 
 ## 1. Inwentaryzacja (bez zmian w plikach)
 Najpierw `CLAUDE.md.pre-kit` i pliki `CLAUDE.md` w podkatalogach: ich zasady bezpieczeństwa (np. czego nie uruchamiać) obowiązują od razu.
@@ -29,8 +29,8 @@ Raport dla właściciela (≤20 linii):
 
 ## 2. Porządki po instalacji
 - Pliki z `docs/` spoza mapy — wg decyzji z kroku 1.
-- `*.pre-kit` poza `CLAUDE.md.pre-kit`: treść projektu przenieś do wersji kitu (np. uprawnienia i hooki w `.claude/settings.json`), potem usuń `*.pre-kit`.
-- Lint, typy lub pre-commit projektu obejmują całe repo → wyłącz z nich `.claude/` i `tools/` (pliki kitu), inaczej PR adopcji będzie czerwony.
+- `*.pre-kit` poza `CLAUDE.md.pre-kit`: treść projektu przenieś do wersji trybik-engine (np. uprawnienia i hooki w `.claude/settings.json`), potem usuń `*.pre-kit`.
+- Lint, typy lub pre-commit projektu obejmują całe repo → wyłącz z nich `.claude/` i `tools/` (pliki trybik-engine), inaczej PR adopcji będzie czerwony.
 - `CLAUDE.md.pre-kit` rozbierasz w krokach 4–5 (komendy, konwencje); reguły sprzeczne z procesem → pytanie. Usuwasz go po kroku 5.
 
 ## 3. Wizja → `docs/product/vision.md`
@@ -56,7 +56,7 @@ Brak kodu aplikacji → `kickoff.md` krok 5 (szkielet). Jest kod → T-001 „Po
 - komendy w `CLAUDE.md` sprawdzone w praktyce (install, testy, jeden test, lint, typy, dev);
 - te same komendy w `tools/ci.sh` w miejsce bloku `UWAGA`; lint/typy, które nie przechodzą na całym kodzie → tylko zmienione pliki albo baseline (naprawa całości → osobne tickety);
 - brak testów → runner wg ADR i jeden test dymny (np. start aplikacji), żeby tester miał wzorzec;
-- CI na GitHubie: jeden workflow przygotowuje środowisko i woła `bash tools/ci.sh` (komendy tylko w `ci.sh`). Instalator zostawił workflow projektu o tej samej nazwie → dopisz do niego ten krok; kit dodał `ci.yml` obok innych workflowów → scal je;
+- CI na GitHubie: jeden workflow przygotowuje środowisko i woła `bash tools/ci.sh` (komendy tylko w `ci.sh`). Instalator zostawił workflow projektu o tej samej nazwie → dopisz do niego ten krok; trybik-engine dodał `ci.yml` obok innych workflowów → scal je;
 - `.env.example` z bieżącymi zmiennymi.
 Wzorzec dla sekcji B kolejnych ticketów: moduły wskazane w architekturze.
 **STOP: akceptacja** (`draft` → `ready`), potem dostarczenie wg `docs/runbooks/delivery.md`.
