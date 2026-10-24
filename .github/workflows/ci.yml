@@ -1,0 +1,30 @@
+name: CI
+
+# Całe sprawdzenie jest w tools/ci.sh (to samo uruchamia się lokalnie); tu tylko przygotowanie środowiska.
+# PR tylko z dokumentacją nie uruchamia CI (oszczędność minut) — agent sprawdza go lokalnie `bash tools/ci.sh`,
+# a automat git (.claude/hooks/guard_git.py) pilnuje tego przy `gh pr merge`.
+on:
+  pull_request:
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      # Przygotowanie stosu — uzupełnia T-001 wg ADR-0001, np.:
+      # - uses: actions/setup-python@v6
+      #   with: { python-version: "3.12" }
+      # - run: pip install uv && uv sync
+      - run: bash tools/ci.sh
