@@ -200,7 +200,7 @@ def main(argv):
         if ignored:
             print(f"UWAGA: .gitignore projektu ignoruje pliki trybik-engine ({', '.join(ignored)}) — popraw go, inaczej nie trafią do repo.")
     print("Dalej: " + ("przejrzyj `git diff`, scal `*.pre-kit` i zacommituj." if upgrade
-                       else "README.md trybik-engine, sekcja „Szybki start”."))
+                       else "otwórz projekt w Claude Code i napisz „zacznij projekt” (od zera) albo „przejmij projekt” (jest już kod lub dokumenty)."))
     return 0
 
 

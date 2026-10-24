@@ -7,10 +7,14 @@ Zasady:
 - Każdy krok kończy się **STOP: akceptacja właściciela**. Bez niej nie idziesz dalej.
 - Pytania zadajesz partiami po 1–3, każde z rekomendacją (właściciel może odpowiedzieć „tak”). Nierozstrzygnięte → `docs/QUESTIONS.md`.
 - Dokumenty krótkie: piszesz to, czego agent potrzebuje do pracy, nie podręcznik.
-- Git: kroki 1–5 (do akceptacji T-001) na branchu `docs/kickoff`; potem PR, `bash tools/ci.sh` (PR z samą dokumentacją nie uruchamia CI na GitHubie) i `gh pr merge --squash`. T-001 i dalej — branch wg ticketu.
+- Git: kroki 1–5 (do akceptacji T-001) na branchu `docs/kickoff`; potem PR, `gh pr checks --watch` (gdy GitHub nie uruchomi zadania → `bash tools/ci.sh` lokalnie) i `gh pr merge --squash`. T-001 i dalej — branch wg ticketu.
 
-## 0. Właściciel (ręcznie, przed sesją)
-Instaluje trybik-engine (`README.md` i `install.py` z repo trybik-engine), wpisuje nazwę w `CLAUDE.md`, `git init`, pierwszy commit na `main` (hook git przepuszcza pierwszy commit; każdy następny idzie na branchu), repo na GitHubie: `gh repo create <nazwa> --private --source=. --push`.
+## 0. Przygotowanie (na początku pierwszej sesji)
+Właściciel tylko zainstalował trybik-engine (`install.py`) i napisał „zacznij projekt”. Ty, po kolei:
+1. Nazwa: pierwsza linia `CLAUDE.md` to wciąż `# <Nazwa projektu>` → zapytaj właściciela i wpisz.
+2. Brak repo gita (`git rev-parse --git-dir` się nie udaje) → `git init -b main`, `git add -A`, pierwszy commit `chore: trybik-engine` na `main` (hook git przepuszcza pierwszy commit; każdy następny idzie na branchu). Brak gita na maszynie → **STOP**: powiedz właścicielowi, co zainstalować.
+3. GitHub: brak `origin` → `gh auth status`. Działa → zapytaj, czy założyć repo (prywatne czy publiczne), i `gh repo create <nazwa> --private --source=. --push`. Brak `gh` lub logowania → powiedz właścicielowi, czego brakuje (`gh` z cli.github.com, `gh auth login`), i idź dalej: GitHub jest potrzebny dopiero przy PR po kroku 5. Wtedy `git switch main`, `gh repo create … --push`, powrót na branch. `main` wypychasz tylko tak; `git push origin main` blokuje hook git.
+4. `git switch -c docs/kickoff`.
 
 ## 1. Wizja → `docs/product/vision.md`
 Z `docs/templates/product.md`. Rozmowa z właścicielem: problem, użytkownicy, cele, poza zakresem, MVP, ograniczenia, słownik pojęć. Zakres MVP to lista funkcji (każda dostanie spec), nie ticketów.

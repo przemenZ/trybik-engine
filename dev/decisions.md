@@ -2,6 +2,14 @@
 
 Każdy wpis: co zrobiono z punktem przeglądu albo propozycją i dlaczego. Najnowsze na górze.
 
+## README dla człowieka (branch `docs/readme`)
+
+| Problem | Decyzja | Co i dlaczego |
+|---|---|---|
+| README czytało się jak specyfikację: pojęcia przed wyjaśnieniem, ten sam temat (lokalne CI) w 5 miejscach, brak opisu roli właściciela | zrobione | README (197 linii zamiast 350): jak wygląda praca, rola właściciela, wymagania z „kiedy potrzebne”, szybki start w 3 krokach, słowniczek, automaty w skrócie. Szczegóły (przepływ, ticket, role, bramki, CI, struktura, zasady, roadmapa) przeniesione do `HOW-IT-WORKS.md` z poprawkami: wiersz o hooku `SessionStart`, `ci.yml` rusza na każdym PR, roadmapa odróżnia istniejący hook od planowanego. Opisy instalatora (odmowy, konflikty plików) w `<details>`. |
+| start wymagał od człowieka `git init`, commita i `gh repo create`, choć instalator działa bez repo | zmienione | Krok 0 w `kickoff.md` i `adoption.md` robi agent: pyta o nazwę, zakłada repo, proponuje repo na GitHubie. Brak `gh` nie blokuje startu, tylko pierwszy PR. Komunikat końcowy `install.py` mówi wprost, co napisać w Claude Code. `main` trafia na GitHuba tylko przez `gh repo create --push` z `main` (hook git blokuje `git push origin main`); test `Bootstrap` w `test_guard_git.py`. |
+| brak trybu bez GitHuba | pominięte (na razie) | Dostarczanie kończy się PR i `gh pr merge`; tryb lokalny wymaga zmian w hooku git, `/deliver` i runbookach. Osobny temat. Sprawdzanie git/`gh` na starcie sesji też osobno. |
+
 ## Przegląd 2026-10-24 (branch `chore/review-2026-10`)
 
 Zewnętrzny przegląd całego repo: 3 punkty krytyczne (K), 6 ważnych (W), 14 drobnych (D). Kolumna „Decyzja”: **zrobione** = jak w przeglądzie, **zmienione** = zrobione inaczej niż proponował przegląd, **pominięte** = celowo nie zrobione.

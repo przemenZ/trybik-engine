@@ -12,8 +12,11 @@ Zasady:
 - Dług i problemy znalezione po drodze → szkice ticketów (`/ticket`) albo `docs/journal.md`; w `docs/STATE.md` najwyżej kilka linii.
 - Git: kroki 1–7 (do akceptacji T-001) na branchu `docs/adoption`; potem PR, `bash tools/ci.sh`, `gh pr merge --squash`. T-001 i dalej — branch wg ticketu.
 
-## 0. Właściciel (ręcznie, przed sesją)
-Wg `README.md` trybik-engine, „Istniejący projekt”: instalacja trybik-engine na branchu `docs/adoption`, dokumenty spoza repo (notatki, PDF, docx) w `docs/sources/`, nazwa projektu w `CLAUDE.md`.
+## 0. Przygotowanie (na początku pierwszej sesji)
+Właściciel zainstalował trybik-engine (`install.py`), dokumenty spoza repo (notatki, PDF, docx) mógł skopiować do `docs/sources/`, i napisał „przejmij projekt”. Ty:
+- Nazwa: jak w `kickoff.md`, krok 0 (podpowiedź często jest w `CLAUDE.md.pre-kit`, manifeście albo README projektu).
+- Brak repo gita → kroki 2–3 z `kickoff.md`, potem `git switch -c docs/adoption`. Pierwszy commit obejmuje też zastany kod i dokumenty, więc przed nim `git status`: sekrety, buildy, zależności i duże pliki najpierw do `.gitignore`, a w razie wątpliwości zapytaj.
+- Repo już było → instalator wymagał brancha innego niż główny; jeśli to nie `docs/adoption`, przełącz się na niego (`git switch -c docs/adoption`). Brak `origin` → krok 3 z `kickoff.md`. Pliki trybik-engine commitujesz po kroku 2 (porządki).
 
 ## 1. Inwentaryzacja (bez zmian w plikach)
 Najpierw `CLAUDE.md.pre-kit` i pliki `CLAUDE.md` w podkatalogach: ich zasady bezpieczeństwa (np. czego nie uruchamiać) obowiązują od razu.
