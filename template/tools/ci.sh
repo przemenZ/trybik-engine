@@ -13,7 +13,7 @@ fi
 
 run() { echo "▶ $*"; bash -c "$*"; }
 
-run python3 tools/docs_check.py
+run bash .claude/hooks/py.sh tools/docs_check.py  # python3 / python / py -3 — co działa na tej maszynie
 # --- Stos: uzupełnia T-001 (te same komendy co w CLAUDE.md) w miejsce tego bloku ---
 if grep -qs '^status: *done' docs/tickets/T-001-*.md; then
   echo "BŁĄD: T-001 jest done, a testy/lint/typy nie są skonfigurowane — uzupełnij tools/ci.sh."; exit 1

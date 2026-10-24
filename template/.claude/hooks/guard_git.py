@@ -36,7 +36,7 @@ PR_ONLY = "Do {b} scalamy tylko przez PR: `gh pr merge --squash` (automat sprawd
 
 
 def run(cmd, cwd, timeout=30):
-    p = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True, timeout=timeout)
+    p = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=timeout)
     if p.returncode != 0:
         raise RuntimeError(p.stderr.strip())
     return p.stdout
@@ -209,4 +209,9 @@ def main():
 
 
 if __name__ == "__main__":
+    for stream in (sys.stdin, sys.stdout, sys.stderr):  # UTF-8 niezależnie od kodowania systemu (Windows: cp1250)
+        try:
+            stream.reconfigure(encoding="utf-8")
+        except Exception:
+            pass
     sys.exit(main())

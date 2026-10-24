@@ -1,12 +1,19 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "env": {
+    "PYTHONUTF8": "1"
+  },
   "permissions": {
     "allow": [
       "Bash(python3 tools/docs_check.py)",
       "Bash(python3 tools/docs_check.py *)",
       "Bash(bash tools/ci.sh)",
       "Bash(gh pr checks)",
-      "Bash(gh pr checks *)"
+      "Bash(gh pr checks *)",
+      "Bash(python tools/docs_check.py)",
+      "Bash(python tools/docs_check.py *)",
+      "Bash(py -3 tools/docs_check.py)",
+      "Bash(py -3 tools/docs_check.py *)"
     ],
     "ask": [
       "Bash(git reset --hard *)",
@@ -22,7 +29,10 @@
     "Stop": [
       {
         "hooks": [
-          { "type": "command", "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/stop_check.py\"" }
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/py.sh\" \"$CLAUDE_PROJECT_DIR/.claude/hooks/stop_check.py\""
+          }
         ]
       }
     ],
@@ -30,7 +40,20 @@
       {
         "matcher": "Bash",
         "hooks": [
-          { "type": "command", "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard_git.py\"" }
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/py.sh\" \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard_git.py\""
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/py.sh\" --session"
+          }
         ]
       }
     ]

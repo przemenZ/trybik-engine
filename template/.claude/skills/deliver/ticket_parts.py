@@ -24,7 +24,7 @@ HIDDEN_FROM_TESTER = ("docs/tickets/", "docs/BACKLOG.md")
 
 
 def git(*args):
-    p = subprocess.run(["git", *args], cwd=ROOT, capture_output=True, text=True, timeout=10)
+    p = subprocess.run(["git", *args], cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=10)
     return p.stdout.strip() if p.returncode == 0 else None
 
 
@@ -90,4 +90,9 @@ def main(argv):
 
 
 if __name__ == "__main__":
+    for stream in (sys.stdin, sys.stdout, sys.stderr):  # UTF-8 niezależnie od kodowania systemu (Windows: cp1250)
+        try:
+            stream.reconfigure(encoding="utf-8")
+        except Exception:
+            pass
     sys.exit(main(sys.argv[1:]))

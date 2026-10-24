@@ -15,6 +15,7 @@ Proces i mapa dokumentów: `docs/PROCESS.md`.
 - uruchomienie dev: `<...>`
 - docs: `python3 tools/docs_check.py` (walidacja), `--write` (regeneracja BACKLOG.md), `--next`, `--new "Tytuł"` (nowy szkic ticketu), `--check T-NNN` (szkic gotowy do `ready`?)
 - CI (pełne sprawdzenie, to samo co na GitHubie): `bash tools/ci.sh`
+- Python: komendy podają `python3`; gdy na maszynie działa inna komenda (Windows: `python` albo `py -3`), hook startu sesji to zgłasza — używaj wtedy jej.
 
 ## Zasady
 - Status pracy jest tylko we front-matter ticketu. `docs/BACKLOG.md` jest generowany — nie edytuj go ręcznie.

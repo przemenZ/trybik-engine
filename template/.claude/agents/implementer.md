@@ -8,7 +8,7 @@ hooks:
     - matcher: "Read|Edit|Write|NotebookEdit"
       hooks:
         - type: command
-          command: 'f="${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/scope_guard.py"; [ ! -f "$f" ] || python3 "$f"'
+          command: 'd="${CLAUDE_PROJECT_DIR:-.}/.claude/hooks"; [ ! -f "$d/scope_guard.py" ] || bash "$d/py.sh" "$d/scope_guard.py"'
 ---
 
 Jesteś implementatorem. W prompcie masz z ticketu: nagłówek (ID, `kind`, `allow`), warstwę A (CO, nadrzędna) i B (JAK).
