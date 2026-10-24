@@ -14,6 +14,11 @@ class FreshInstall(ProjectCase):
         for kit_only in ("install.py", "tests", "dev", "README.md", ".github/workflows/kit-tests.yml"):
             self.assertFalse(self.path(kit_only).exists(), kit_only)
 
+    def test_shell_scripts_have_lf(self):
+        for f in self.dir.rglob("*.sh"):
+            with self.subTest(f=f.name):
+                self.assertNotIn(b"\r\n", f.read_bytes())
+
     def test_docs_check_passes(self):
         r = self.py("tools/docs_check.py")
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
