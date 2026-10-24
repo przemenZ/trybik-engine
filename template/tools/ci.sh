@@ -14,6 +14,19 @@ fi
 run() { echo "▶ $*"; bash -c "$*"; }
 
 run bash .claude/hooks/py.sh tools/docs_check.py  # python3 / python / py -3 — co działa na tej maszynie
+
+# PR na GitHubie tylko z dokumentacją (docs/, *.md) → bez testów, lintu i typów (oszczędność minut).
+docs_only=""
+if [ -n "${GITHUB_BASE_REF:-}" ]; then
+  # błąd gita (np. brak historii) = traktuj jak zmianę kodu
+  changed=$(git diff --name-only "origin/$GITHUB_BASE_REF...HEAD") || changed="?"
+fi
+if [ -n "${changed:-}" ] && ! grep -qvE '^docs/|\.md$' <<<"$changed"; then
+  docs_only=1
+  echo "Tylko dokumentacja — pomijam testy, lint i typy."
+fi
+
+if [ -z "$docs_only" ]; then
 # --- Stos: uzupełnia T-001 (te same komendy co w CLAUDE.md) w miejsce tego bloku ---
 if grep -qs '^status: *done' docs/tickets/T-001-*.md; then
   echo "BŁĄD: T-001 jest done, a testy/lint/typy nie są skonfigurowane — uzupełnij tools/ci.sh."; exit 1
@@ -22,9 +35,11 @@ echo "UWAGA: testy, lint i typy nie są jeszcze skonfigurowane (ticket T-001)."
 # run "<lint>"
 # run "<typy>"
 # run "<testy>"
+fi
 
 if [ -n "$tree" ]; then
-  echo "$tree" >> "$(git rev-parse --git-common-dir)/ci-passed"
+  f="$(git rev-parse --git-common-dir)/ci-passed"
+  echo "$tree" >>"$f" && tail -n 200 "$f" >"$f.tmp" && mv "$f.tmp" "$f"  # ostatnie 200 wyników
   echo "OK: wynik zapamiętany dla commita $(git rev-parse --short HEAD)."
 elif [ -z "${CI:-}" ]; then
   echo "OK, ale wynik nie został zapamiętany (niezacommitowane zmiany albo brak repo git)."

@@ -5,7 +5,7 @@ To repo to kit procesu, a nie projekt prowadzony tym procesem.
 - Korzeń: `install.py`, `tests/`, `dev/` (decyzje i plany kitu), README, CI kitu (`.github/workflows/kit-tests.yml`).
 
 ## Komendy
-- testy: `python3 -m unittest discover -s tests -v` · jeden: `python3 -m unittest tests.test_guard_git -v`
+- testy: `python3 -m unittest discover -s tests -v` · jeden plik: `python3 -m unittest discover -s tests -p test_guard_git.py -v`
 - ręczna próba instalacji: `python3 install.py <pusty-katalog-tymczasowy>`
 
 ## Zasady
