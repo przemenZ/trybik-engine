@@ -2,7 +2,7 @@
 
 Start sesji: ten plik → `docs/STATE.md` → ticket/spec, którego dotyczy zadanie.
 
-**Start procesu** (brak `docs/product/vision.md`) → w repo jest już kod lub dokumenty projektu: `docs/runbooks/adoption.md`; poza kitem nic nie ma: `docs/runbooks/kickoff.md`. Ma pierwszeństwo przed poniższym.
+**Start procesu** (brak `docs/product/vision.md`) → w repo jest już kod lub dokumenty projektu: `docs/runbooks/adoption.md`; poza plikami trybik-engine nic nie ma: `docs/runbooks/kickoff.md`. Ma pierwszeństwo przed poniższym.
 
 **„Dostarcz kolejny feature"** = `python3 tools/docs_check.py --next` → wskazany ticket. `ready`/`in-progress` → skill `/deliver` (kontrakt: `docs/runbooks/delivery.md`). Brak takiego ticketu → napisz lub uzupełnij ticket (`draft`, skill `/ticket`), zapytania wpisz do `docs/QUESTIONS.md` i zatrzymaj się do akceptacji właściciela.
 Proces i mapa dokumentów: `docs/PROCESS.md`.

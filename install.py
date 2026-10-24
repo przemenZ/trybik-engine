@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""Instaluje kit w katalogu projektu — nowym albo istniejącym (tylko stdlib). Sam zostaje w kicie.
+"""Instaluje trybik-engine w katalogu projektu — nowym albo istniejącym (tylko stdlib). Sam zostaje w repo trybik-engine.
 
   python3 install.py <katalog-projektu>
 
-Brakujące pliki kopiuje, identyczne pomija. Gdy plik projektu różni się od pliku kitu:
-- `.gitignore` — dopisuje brakujące linie kitu;
+Brakujące pliki kopiuje, identyczne pomija. Gdy plik projektu różni się od pliku trybik-engine:
+- `.gitignore` — dopisuje brakujące linie trybik-engine;
 - `.env.example` i workflowy w `.github/workflows/` — zostaje wersja projektu (workflow scala T-001);
-- pozostałe — wersja projektu → `<plik>.pre-kit`, na jej miejsce wersja kitu (scalenie: docs/runbooks/adoption.md).
-Odmawia, gdy: cel to katalog kitu, repo ma niezacommitowane zmiany, repo z historią stoi na main/master,
+- pozostałe — wersja projektu → `<plik>.pre-kit`, na jej miejsce wersja trybik-engine (scalenie: docs/runbooks/adoption.md).
+Odmawia, gdy: cel to katalog trybik-engine, repo ma niezacommitowane zmiany, repo z historią stoi na main/master,
 zostały pliki `*.pre-kit` z poprzedniej instalacji.
 """
 import filecmp
@@ -16,7 +16,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-KIT = Path(__file__).resolve().parent
+ENGINE = Path(__file__).resolve().parent
 ITEMS = ("CLAUDE.md", "docs", "tools", ".claude", ".github", ".gitignore", ".env.example")
 SKIP = {"__pycache__", "settings.local.json", ".DS_Store"}
 KEEP_PROJECT = (".env.example",)
@@ -24,14 +24,14 @@ WORKFLOWS = ".github/workflows/"
 ENC = {"encoding": "utf-8", "errors": "surrogateescape"}  # obce kodowanie przechodzi bajt w bajt
 
 
-def kit_paths():
+def engine_paths():
     for item in ITEMS:
-        p = KIT / item
+        p = ENGINE / item
         if p.is_file():
             yield p
         elif p.is_dir():
             for f in sorted(p.rglob("*")):
-                if not SKIP & set(f.relative_to(KIT).parts) and f.suffix != ".pyc":
+                if not SKIP & set(f.relative_to(ENGINE).parts) and f.suffix != ".pyc":
                     yield f
 
 
@@ -45,15 +45,15 @@ def git(target, *args):
 
 def refusals(target, paths):
     out = []
-    if target == KIT or KIT in target.parents:
-        out.append("cel to katalog kitu")
+    if target == ENGINE or ENGINE in target.parents:
+        out.append("cel to katalog trybik-engine")
     if git(target, "rev-parse", "--is-inside-work-tree") == "true":
         if git(target, "status", "--porcelain"):
             out.append("repo ma niezacommitowane zmiany — zacommituj je albo odłóż (git stash)")
         if git(target, "rev-parse", "-q", "--verify", "HEAD") and git(target, "rev-parse", "--abbrev-ref", "HEAD") in ("main", "master"):
             out.append("repo stoi na głównej gałęzi — najpierw: git switch -c docs/adoption")
     for src in paths:
-        dst = target / src.relative_to(KIT)
+        dst = target / src.relative_to(ENGINE)
         if Path(str(dst) + ".pre-kit").exists():
             out.append(f"został {dst.relative_to(target)}.pre-kit z poprzedniej instalacji — najpierw go scal")
         if dst.exists() and dst.is_dir() != src.is_dir():
@@ -67,7 +67,7 @@ def append_missing(src, dst):
     missing = [l for l in src.read_text(**ENC).splitlines() if l.strip() and not l.startswith("#") and l.strip() not in have]
     if missing:
         sep = "\n" if text and not text.endswith("\n") else ""
-        dst.write_text(text + sep + "\n# process-kit\n" + "\n".join(missing) + "\n", **ENC)
+        dst.write_text(text + sep + "\n# trybik-engine\n" + "\n".join(missing) + "\n", **ENC)
     return len(missing)
 
 
@@ -76,7 +76,7 @@ def main(argv):
         print("użycie: python3 install.py <katalog-projektu>")
         return 2
     target = Path(argv[0]).expanduser().resolve()
-    paths = list(kit_paths())
+    paths = list(engine_paths())
     errors = refusals(target, paths)
     for e in errors:
         print(f"ODMOWA: {e}")
@@ -86,7 +86,7 @@ def main(argv):
     new = same = appended = 0
     kept, moved = [], []
     for src in paths:
-        rel = src.relative_to(KIT)
+        rel = src.relative_to(ENGINE)
         dst = target / rel
         if src.is_dir():
             dst.mkdir(parents=True, exist_ok=True)
@@ -105,20 +105,20 @@ def main(argv):
             shutil.copy2(src, dst)
             moved.append(rel.as_posix())
 
-    print(f"Kit zainstalowany w {target}: nowe pliki {new}, identyczne {same}.")
+    print(f"trybik-engine zainstalowany w {target}: nowe pliki {new}, identyczne {same}.")
     if appended:
-        print(f"- .gitignore: dopisano {appended} linii kitu")
+        print(f"- .gitignore: dopisano {appended} linii trybik-engine")
     for r in kept:
-        note = " (workflow kitu pominięty — scalenie w T-001)" if r.startswith(WORKFLOWS) else ""
+        note = " (workflow trybik-engine pominięty — scalenie w T-001)" if r.startswith(WORKFLOWS) else ""
         print(f"- zostaje wersja projektu: {r}{note}")
     for r in moved:
-        print(f"- do scalenia: {r}.pre-kit (wersja projektu; na jej miejscu wersja kitu)")
+        print(f"- do scalenia: {r}.pre-kit (wersja projektu; na jej miejscu wersja trybik-engine)")
     if git(target, "rev-parse", "--is-inside-work-tree") == "true":
         probe = (".claude/settings.json", "tools/docs_check.py", "docs/PROCESS.md", "CLAUDE.md")
         ignored = [p for p in probe if git(target, "check-ignore", "-q", p) is not None]
         if ignored:
-            print(f"UWAGA: .gitignore projektu ignoruje pliki kitu ({', '.join(ignored)}) — popraw go, inaczej kit nie trafi do repo.")
-    print("Dalej: README.md kitu, sekcja „Użycie”.")
+            print(f"UWAGA: .gitignore projektu ignoruje pliki trybik-engine ({', '.join(ignored)}) — popraw go, inaczej nie trafią do repo.")
+    print("Dalej: README.md trybik-engine, sekcja „Szybki start”.")
     return 0
 
 
