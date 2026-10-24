@@ -1,15 +1,26 @@
 #!/usr/bin/env python3
 """Hook PreToolUse (Bash): zakazy gitowe i bramka CI przed scaleniem do main/master.
 
-- `git push` z `--force` / `-f` (dozwolone `--force-with-lease`) albo wprost do main (`…:main`).
-- `git commit` na main/master. Wyjątki: pierwszy commit w repo, dokończenie merge po `git pull`,
-  polecenie, które najpierw tworzy branch (`git switch -c …` / `git checkout -b …`).
-- `git merge` do main/master: do main tylko przez PR (wolno tylko aktualizację z `origin/main`).
+To barierka dla agenta, który współpracuje, a nie zabezpieczenie: aliasy gita, skrypty, `bash -c "…"`
+i ręczna praca właściciela przechodzą. Ochronę po stronie serwera (reguły gałęzi na GitHubie) ustawia projekt.
+
+Polecenie jest dzielone na kroki (`;`, `&&`, `||`, `|`, nowa linia). Hook śledzi w nim `cd`, `git -C`
+i zmiany gałęzi (`git switch`/`checkout`), więc ocenia gałąź, na której krok faktycznie się wykona.
+
+- `git push`: liczy gałęzie docelowe. Zakaz, gdy któraś to main/master (jawnie, przez `HEAD` albo push bez
+  refspecu z main), przy force pushu (`--force`, `-f`, `+refspec`; dozwolone `--force-with-lease`)
+  oraz przy `--mirror`, `--all`, `--prune`. Usunięcie własnej gałęzi (`--delete feat/x`) i tagi są dozwolone.
+- `git commit` na main/master. Wyjątki: pierwszy commit w repo, dokończenie merge po `git pull`.
+- `git merge` do main/master: wolno tylko aktualizację z `origin/main`.
+- `git cherry-pick|rebase|reset|revert|am` na main/master: zakaz; wolno `reset --hard origin/main`,
+  `reset [-- plik]` (unstage) oraz `--abort/--continue/--skip/--quit`.
 - `gh pr merge` do main/master tylko, gdy CI na GitHubie jest zielone dla ostatniego commita PR.
   Gdy GitHub nie uruchomił testów (PR tylko z dokumentacją, brak minut) — wystarczy, że ten sam stan
-  przeszedł lokalnie `bash tools/ci.sh` (zapis w .git/ci-passed). Błąd testów na GitHubie blokuje zawsze.
+  przeszedł lokalnie `bash tools/ci.sh` (zapis w .git/ci-passed; to deklaracja agenta, nie dowód).
+  Błąd testów na GitHubie blokuje zawsze; błąd `gh` (brak logowania, sieć) też blokuje, z komunikatem.
 
-Blokada = exit 2 + komunikat na stderr (trafia do agenta). Własna awaria hooka nigdy nie blokuje (exit 0).
+Blokada = exit 2 + komunikat na stderr (trafia do agenta). Własna awaria hooka nie blokuje, ale jest widoczna:
+exit 1 + komunikat + wpis w .git/trybik-hooks.log.
 """
 import json
 import re
@@ -18,25 +29,32 @@ import subprocess
 import sys
 from pathlib import Path
 
-GIT_CMD = re.compile(r"\bgit\s+(?:-[Cc]\s+\S+\s+)*(commit|push|merge)(?![\w-])([^;&|]*)")
-# zmiana gałęzi w tym samym poleceniu: grupa 1 = nowa gałąź (-c/-b), grupa 2 = istniejąca
-SWITCH = re.compile(
-    r"\bgit\s+(?:(?:switch\s+(?:-c|-C|--create)|checkout\s+-[bB])\s+([^\s;&|]+)"
-    r"|(?:switch|checkout)\s+(?!-)([^\s;&|]+))"
-)
-FORCE = re.compile(r"(?<!\S)(?:--force|-f)(?!\S)")
-PUSH_TO_MAIN = re.compile(r":(?:refs/heads/)?(?:main|master)(?![\w/.-])")
-GH_MERGE = re.compile(r"\bgh\s+pr\s+merge(?![\w-])([^;&|]*)")
-GH_VALUE_FLAGS = {"-t", "--subject", "-b", "--body", "-F", "--body-file", "-A", "--author-email",
-                  "--match-head-commit", "-R", "--repo"}
-MERGE_VALUE_FLAGS = {"-m", "-F", "--file", "-s", "--strategy", "-X", "--strategy-option"}
-JOB_URL = re.compile(r"github\.com/([^/]+/[^/]+)/actions/runs/\d+/job/(\d+)")
+sys.dont_write_bytecode = True
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from hooklib import crashed  # noqa: E402
+
 MAIN = ("main", "master")
 PR_ONLY = "Do {b} scalamy tylko przez PR: `gh pr merge --squash` (automat sprawdza wtedy CI)."
+SEPARATORS = {";", "&&", "||", "|", "&", "\n", "(", ")", "|&", ";;"}
+REDIRECT = re.compile(r"^[<>&]+$")
+# opcje globalne gita przed podkomendą; True = bierze wartość w osobnym tokenie
+GIT_GLOBAL = {"-C": True, "-c": True, "--git-dir": True, "--work-tree": True, "--namespace": True,
+              "--exec-path": False, "-P": False, "--no-pager": False, "-p": False, "--paginate": False,
+              "--bare": False, "--no-replace-objects": False, "--literal-pathspecs": False,
+              "--no-optional-locks": False}
+PUSH_VALUE_FLAGS = {"-o", "--push-option", "--repo", "--receive-pack", "--exec"}
+PUSH_BANNED = {"--mirror", "--all", "--prune"}
+MERGE_VALUE_FLAGS = {"-m", "-F", "--file", "-s", "--strategy", "-X", "--strategy-option"}
+REWRITE = ("cherry-pick", "rebase", "reset", "revert", "am")
+SEQUENCE_CONTROL = {"--abort", "--quit", "--continue", "--skip"}
+GH_VALUE_FLAGS = {"-t", "--subject", "-b", "--body", "-F", "--body-file", "-A", "--author-email",
+                  "--match-head-commit", "-R", "--repo"}
+JOB_URL = re.compile(r"github\.com/([^/]+/[^/]+)/actions/runs/\d+/job/(\d+)")
 
 
 def run(cmd, cwd, timeout=30):
-    p = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=timeout)
+    p = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True, encoding="utf-8", errors="replace",
+                       timeout=timeout)
     if p.returncode != 0:
         raise RuntimeError(p.stderr.strip())
     return p.stdout
@@ -45,7 +63,7 @@ def run(cmd, cwd, timeout=30):
 def git(cwd, *args):
     try:
         return run(["git", *args], cwd, timeout=5).strip()
-    except RuntimeError:
+    except (RuntimeError, OSError):
         return None
 
 
@@ -63,30 +81,122 @@ def positional(tokens, value_flags):
             skip = False
         elif t in value_flags:
             skip = True
-        elif not t.startswith("-") and not re.search(r"[<>]", t):
+        elif not t.startswith("-"):
             out.append(t)
     return out
 
 
-def branch_at(command, pos, cwd):
-    """Gałąź, na której wykona się polecenie z pozycji `pos`, i czy zmieniono ją wcześniej w tym samym poleceniu."""
-    found = list(SWITCH.finditer(command[:pos]))
-    if found:
-        m = found[-1]
-        return m.group(1) or m.group(2), True
-    return git(cwd, "symbolic-ref", "--short", "-q", "HEAD"), False
+def steps(command):
+    """Polecenie → lista kroków (listy tokenów), z pominięciem przekierowań (`> plik`, `2>&1`)."""
+    lex = shlex.shlex(command, posix=True, punctuation_chars="();<>|&\n")
+    lex.whitespace = " \t\r"
+    lex.whitespace_split = True
+    try:
+        tokens = list(lex)
+    except ValueError:  # niedomknięty cudzysłów: zgrubny podział
+        tokens = re.sub(r"(;|&&|\|\||\||\n)", r" \1 ", command).split(" ")
+    out, cur, skip = [], [], False
+    for t in tokens:
+        if skip:
+            skip = False
+        elif t in SEPARATORS:
+            if cur:
+                out.append(cur)
+            cur = []
+        elif REDIRECT.match(t):
+            if cur and cur[-1].isdigit():
+                cur.pop()  # deskryptor przed przekierowaniem (`2>`)
+            skip = True  # następny token to plik albo deskryptor (`>&1`)
+        elif t:
+            cur.append(t)
+    if cur:
+        out.append(cur)
+    return out
 
 
-def check_push(args):
-    if FORCE.search(args):
-        return "Force push jest zabroniony. Jeśli naprawdę potrzebny, właściciel robi go ręcznie."
-    if PUSH_TO_MAIN.search(args):
-        return PR_ONLY.format(b="main")
+class State:
+    """Katalog i gałąź, w których wykona się kolejny krok polecenia."""
+
+    def __init__(self, cwd):
+        self.cwd = cwd
+        self.branch = None  # None = odczytaj z repo
+
+    def at(self, cwd):
+        return self.branch if self.branch is not None else current_branch(cwd)
+
+
+def current_branch(cwd):
+    return git(cwd, "symbolic-ref", "--short", "-q", "HEAD")
+
+
+def resolve(cwd, path):
+    p = Path(path).expanduser()
+    return str(p if p.is_absolute() else Path(cwd) / p)
+
+
+def parse_git(tokens, cwd):
+    """`git [opcje globalne] sub args…` → (katalog, sub, args)."""
+    i = 1
+    while i < len(tokens) and tokens[i].startswith("-"):
+        t = tokens[i]
+        name = t.split("=", 1)[0]
+        takes = GIT_GLOBAL.get(name, False) and "=" not in t
+        if name == "-C" and i + 1 < len(tokens):
+            cwd = resolve(cwd, tokens[i + 1])
+        i += 2 if takes else 1
+    if i >= len(tokens):
+        return cwd, None, []
+    return cwd, tokens[i], tokens[i + 1:]
+
+
+def switched_to(sub, args, cwd):
+    """Gałąź po `git switch`/`checkout` albo None, gdy krok nie zmienia gałęzi."""
+    if sub not in ("switch", "checkout"):
+        return None
+    if "--" in args:
+        return None  # `git checkout main -- plik` przywraca plik, nie zmienia gałęzi
+    create = {"-c", "-C", "--create", "--force-create", "-b", "-B"}
+    for i, t in enumerate(args):
+        if t in create and i + 1 < len(args):
+            return args[i + 1]
+    pos = positional(args, {"--orphan"})
+    if args[:1] == ["-"] or pos[:1] == ["-"]:
+        return git(cwd, "rev-parse", "--abbrev-ref", "@{-1}") or ""
+    if "--detach" in args or not pos:
+        return None if not pos else ""
+    if sub == "checkout" and git(cwd, "rev-parse", "--verify", "-q", f"refs/heads/{pos[0]}") is None:
+        if git(cwd, "rev-parse", "--verify", "-q", f"refs/remotes/origin/{pos[0]}") is None:
+            return None  # `git checkout plik` (bez `--`) albo commit — nie zmienia gałęzi na nazwaną
+    return pos[0]
+
+
+def check_push(args, branch):
+    if any(t in ("--force", "-f") for t in args) or any(re.fullmatch(r"-[a-zA-Z]*f[a-zA-Z]*", t) for t in args):
+        return "Force push jest zabroniony (dozwolone `--force-with-lease`). Jeśli naprawdę potrzebny, właściciel robi go ręcznie."
+    banned = PUSH_BANNED & set(args)
+    if banned:
+        return f"`git push {' '.join(sorted(banned))}` jest zabroniony dla agenta (może nadpisać albo usunąć {'/'.join(MAIN)})."
+    pos = positional(args, PUSH_VALUE_FLAGS)
+    refspecs = pos[1:]  # pierwszy pozycyjny = remote
+    if any(r.startswith("+") for r in refspecs):
+        return "Force push (`+refspec`) jest zabroniony. Jeśli naprawdę potrzebny, właściciel robi go ręcznie."
+    if "--tags" in args and not refspecs:
+        return None
+    if not refspecs:
+        return PR_ONLY.format(b=branch) if branch in MAIN else None
+    for r in refspecs:
+        dst = r.split(":", 1)[-1]
+        if dst.startswith("refs/tags/"):
+            continue
+        dst = dst[len("refs/heads/"):] if dst.startswith("refs/heads/") else dst
+        if dst in ("HEAD", "@") and ":" not in r:
+            dst = branch
+        if dst in MAIN:
+            return PR_ONLY.format(b=dst)
     return None
 
 
-def check_commit(command, pos, cwd):
-    branch, switched = branch_at(command, pos, cwd)
+def check_commit(branch, switched, cwd):
     if branch not in MAIN:
         return None
     if not switched:
@@ -102,17 +212,25 @@ def check_commit(command, pos, cwd):
     )
 
 
-def check_merge(command, pos, args, cwd):
-    tokens = split(args)
-    if {"--abort", "--quit", "--continue"} & set(tokens):
-        return None
-    branch, _ = branch_at(command, pos, cwd)
-    if branch not in MAIN:
+def check_merge(args, branch):
+    if SEQUENCE_CONTROL & set(args) or branch not in MAIN:
         return None
     allowed = (f"origin/{branch}", "FETCH_HEAD", "@{u}", "@{upstream}")
-    if all(t in allowed for t in positional(tokens, MERGE_VALUE_FLAGS)):
+    if all(t in allowed for t in positional(args, MERGE_VALUE_FLAGS)):
         return None  # aktualizacja main z GitHuba
     return PR_ONLY.format(b=branch)
+
+
+def check_rewrite(sub, args, branch):
+    if SEQUENCE_CONTROL & set(args) or branch not in MAIN:
+        return None
+    if sub == "reset":
+        if not {"--hard", "--soft", "--mixed", "--keep", "--merge"} & set(args):
+            return None  # `git reset` / `git reset -- plik` = tylko unstage
+        targets = positional(args, set())
+        if targets[:1] in ([f"origin/{branch}"], ["@{u}"], ["@{upstream}"]):
+            return None  # synchronizacja z GitHubem
+    return f"`git {sub}` na {branch} jest zabroniony: zmiany na {branch} tylko przez PR."
 
 
 def outcome(c):
@@ -141,16 +259,19 @@ def passed_locally(cwd, sha):
     if not tree or not common:
         return False
     f = Path(cwd) / common / "ci-passed"
-    return f.exists() and tree in f.read_text().split()
+    return f.exists() and tree in f.read_text(encoding="utf-8").split()
 
 
 def check_pr_merge(args, cwd):
-    tokens = split(args)
-    pos = positional(tokens, GH_VALUE_FLAGS)
-    repo = next((tokens[i + 1] for i, t in enumerate(tokens[:-1]) if t in ("-R", "--repo")), None)
+    pos = positional(args, GH_VALUE_FLAGS)
+    repo = next((args[i + 1] for i, t in enumerate(args[:-1]) if t in ("-R", "--repo")), None)
     cmd = ["gh", "pr", "view", *pos[:1], *(["-R", repo] if repo else []),
            "--json", "baseRefName,headRefOid,statusCheckRollup"]
-    info = json.loads(run(cmd, cwd))  # błąd gh → wyjątek → przepuszczamy (gh pr merge i tak się nie uda)
+    try:
+        info = json.loads(run(cmd, cwd))
+    except (RuntimeError, OSError, ValueError) as e:
+        return (f"Nie udało się sprawdzić CI przez `gh pr view` ({str(e)[:200] or type(e).__name__}). "
+                "Sprawdź `gh auth status` i połączenie, potem spróbuj ponownie.")
     if info.get("baseRefName") not in MAIN:
         return None
     checks = info.get("statusCheckRollup") or []
@@ -176,21 +297,43 @@ def check_pr_merge(args, cwd):
 
 
 def check(command, cwd):
-    for m in GIT_CMD.finditer(command):
-        sub, args = m.group(1), m.group(2)
-        if sub == "push":
-            msg = check_push(args)
-        elif sub == "commit":
-            msg = check_commit(command, m.start(), cwd)
+    state = State(cwd)
+    for tokens in steps(command):
+        while tokens and re.match(r"^[A-Za-z_]\w*=", tokens[0]):
+            tokens = tokens[1:]  # `VAR=x git …`
+        if not tokens:
+            continue
+        prog = tokens[0]
+        if prog == "cd":
+            state.cwd = resolve(state.cwd, tokens[1]) if len(tokens) > 1 else str(Path.home())
+            state.branch = None
+            continue
+        if prog == "gh" and tokens[1:3] == ["pr", "merge"]:
+            msg = check_pr_merge(tokens[3:], state.cwd)
+        elif prog == "git":
+            step_cwd, sub, args = parse_git(tokens, state.cwd)
+            other_repo = step_cwd != state.cwd
+            branch = current_branch(step_cwd) if other_repo else state.at(step_cwd)
+            switched = state.branch is not None and not other_repo
+            msg = None
+            if sub == "push":
+                msg = check_push(args, branch)
+            elif sub == "commit":
+                msg = check_commit(branch, switched, step_cwd)
+            elif sub == "merge":
+                msg = check_merge(args, branch)
+            elif sub in REWRITE:
+                msg = check_rewrite(sub, args, branch)
+            else:
+                new = switched_to(sub, args, step_cwd)
+                if new is not None and not other_repo:
+                    state.branch = new
         else:
-            msg = check_merge(command, m.start(), args, cwd)
-        if msg:
-            return msg
-    for m in GH_MERGE.finditer(command):
-        msg = check_pr_merge(m.group(1), cwd)
+            continue
         if msg:
             return msg
     return None
+
 
 
 def main():
@@ -201,7 +344,7 @@ def main():
             return 0
         msg = check(command, data.get("cwd") or ".")
     except Exception:
-        return 0
+        return crashed("guard_git")
     if msg:
         print(msg, file=sys.stderr)
         return 2

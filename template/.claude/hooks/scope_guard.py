@@ -6,13 +6,17 @@
 - Pliki poza repo, brak gita, branch bez ID, brak ticketu lub pusty `allow` → przepuszcza.
 
 Globy `allow`: `*` w obrębie katalogu, `**` przez katalogi, ścieżka bez gwiazdek = plik albo cały katalog.
-Blokada = exit 2 + komunikat na stderr (trafia do agenta). Własna awaria hooka nigdy nie blokuje (exit 0).
+Blokada = exit 2 + komunikat na stderr (trafia do agenta). Własna awaria hooka nie blokuje, ale jest widoczna (exit 1, .git/trybik-hooks.log).
 """
 import json
 import re
 import subprocess
 import sys
 from pathlib import Path
+
+sys.dont_write_bytecode = True
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from hooklib import crashed  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 BRANCH_ID = re.compile(r"(?:^|/)(T-\d+)(?:-|$)")
@@ -94,7 +98,7 @@ def main():
         path = inp.get("file_path") or inp.get("notebook_path")
         msg = check(data.get("tool_name"), path) if path else None
     except Exception:
-        return 0
+        return crashed("scope_guard")
     if msg:
         print(msg, file=sys.stderr)
         return 2

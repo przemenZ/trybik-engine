@@ -3,11 +3,15 @@
 
 - Blokuje zakończenie (exit 2; komunikat ze stderr trafia do agenta) najwyżej raz na turę użytkownika.
 - Pomija błędy szkiców (`draft`), bo to praca właściciela w toku.
-- Własna awaria hooka nigdy nie blokuje (exit 0).
+- Własna awaria hooka nie blokuje, ale jest widoczna (exit 1, .git/trybik-hooks.log).
 """
 import json
 import sys
 from pathlib import Path
+
+sys.dont_write_bytecode = True
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from hooklib import crashed  # noqa: E402
 
 
 def main():
@@ -25,7 +29,7 @@ def main():
         r = docs_check.collect()
         problems = r.choice + r.other
     except Exception:
-        return 0
+        return crashed("stop_check")
     if not problems:
         return 0
     lines = ["Dokumentacja procesu ma błędy (python3 tools/docs_check.py):"]
