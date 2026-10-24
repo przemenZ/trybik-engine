@@ -27,3 +27,61 @@ class Refusals(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class Upgrade(ProjectCase):
+    def setUp(self):
+        super().setUp()
+        from kit import git
+        git(self.dir, "switch", "-q", "-c", "chore/upgrade")
+        self.git = lambda *a: git(self.dir, *a)
+
+    def upgrade(self):
+        self.git("add", "-A")
+        self.git("commit", "-q", "--allow-empty", "-m", "stan")
+        r = run([sys.executable, str(KIT / "install.py"), "--upgrade", str(self.dir)], KIT)
+        self.assertEqual(r.returncode, 0, r.stdout)
+        return r.stdout
+
+    def test_manifest_written(self):
+        self.assertTrue(self.path(".claude/trybik-engine.json").exists())
+
+    def test_project_files_untouched(self):
+        self.write("docs/QUESTIONS.md", "moje pytania\n")
+        self.write("CLAUDE.md", "mój projekt\n")
+        self.upgrade()
+        self.assertEqual(self.path("docs/QUESTIONS.md").read_text(encoding="utf-8"), "moje pytania\n")
+        self.assertEqual(self.path("CLAUDE.md").read_text(encoding="utf-8"), "mój projekt\n")
+        self.assertFalse(list(self.dir.rglob("*.pre-kit")))
+
+    def test_unchanged_kit_file_is_updated(self):
+        # symulacja starej wersji kitu: plik i manifest zgodne, ale inne niż template/
+        import hashlib, json
+        rel = "docs/PROCESS.md"
+        self.write(rel, "stara wersja\n")
+        m = json.loads(self.path(".claude/trybik-engine.json").read_text(encoding="utf-8"))
+        m["files"][rel] = hashlib.sha256(b"stara wersja\n").hexdigest()
+        self.write(".claude/trybik-engine.json", json.dumps(m))
+        self.upgrade()
+        self.assertEqual(self.path(rel).read_bytes(), (KIT / "template" / rel).read_bytes())
+        self.assertFalse(self.path(rel + ".pre-kit").exists())
+
+    def test_locally_changed_kit_file_goes_to_pre_kit(self):
+        rel = "docs/runbooks/delivery.md"
+        self.write(rel, "zmiana projektu\n")
+        self.upgrade()
+        self.assertEqual(self.path(rel + ".pre-kit").read_text(encoding="utf-8"), "zmiana projektu\n")
+
+    def test_settings_news_are_listed(self):
+        import json
+        s = json.loads(self.path(".claude/settings.json").read_text(encoding="utf-8"))
+        s["permissions"]["allow"] = []
+        self.write(".claude/settings.json", json.dumps(s))
+        out = self.upgrade()
+        self.assertIn("permissions.allow: Bash(bash tools/ci.sh)", out)
+        self.assertEqual(json.loads(self.path(".claude/settings.json").read_text(encoding="utf-8"))["permissions"]["allow"], [])
+
+    def test_refuses_without_kit(self):
+        with tempfile.TemporaryDirectory() as d:
+            r = run([sys.executable, str(KIT / "install.py"), "--upgrade", d], KIT)
+            self.assertEqual(r.returncode, 1)

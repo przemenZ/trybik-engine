@@ -111,6 +111,16 @@ Instalator niczego nie nadpisuje:
 
 Instalator odmawia pracy, gdy repo ma niezacommitowane zmiany, stoi na `main`/`master` (dotyczy repo z historią), zostały pliki `*.pre-kit` z poprzedniej instalacji albo celem jest katalog samego trybik-engine.
 
+### Aktualizacja trybik-engine w projekcie
+
+```bash
+cd ../projekt && git switch -c chore/trybik-upgrade && cd -
+git pull                                  # nowa wersja trybik-engine
+python3 install.py --upgrade ../projekt
+```
+
+Aktualizacja zmienia tylko pliki kitu: hooki, skille, agentów, `docs_check.py`, szablony, runbooki i `PROCESS.md`. Plik, którego projekt nie zmieniał (zgodny z manifestem `.claude/trybik-engine.json`), jest nadpisywany. Plik zmieniony w projekcie trafia do `*.pre-kit` do scalenia. Pliki projektu (`CLAUDE.md`, `STATE.md`, `QUESTIONS.md`, `BACKLOG.md`, `journal.md`, `tools/ci.sh`, `.claude/settings.json`, workflowy) zostają bez zmian. Dla `settings.json` instalator wypisuje hooki i uprawnienia, które doszły w nowej wersji.
+
 <details>
 <summary><b>Same dokumenty, bez repozytorium</b></summary>
 
