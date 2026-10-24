@@ -58,7 +58,7 @@ class Upgrade(ProjectCase):
         # symulacja starej wersji kitu: plik i manifest zgodne, ale inne niż template/
         import hashlib, json
         rel = "docs/PROCESS.md"
-        self.write(rel, "stara wersja\n")
+        self.path(rel).write_bytes(b"stara wersja\r\n")  # CRLF jak po checkoutcie na Windowsie
         m = json.loads(self.path(".claude/trybik-engine.json").read_text(encoding="utf-8"))
         m["files"][rel] = hashlib.sha256(b"stara wersja\n").hexdigest()
         self.write(".claude/trybik-engine.json", json.dumps(m))

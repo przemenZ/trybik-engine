@@ -53,7 +53,8 @@ def engine_paths():
 
 
 def sha(path):
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+    """Skrót niezależny od końców linii (Windows: core.autocrlf zamienia LF na CRLF przy checkoutcie)."""
+    return hashlib.sha256(path.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
 
 
 def git(target, *args):

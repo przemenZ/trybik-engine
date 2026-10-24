@@ -100,7 +100,7 @@ class OnFeature(GuardCase):
         git(other, "commit", "-q", "--allow-empty", "-m", "init")
         self.check([
             ("cd other && git commit -m x", BLOCK),
-            (f"git -C {other} commit -m x", BLOCK),
+            (f"git -C {other.as_posix()} commit -m x", BLOCK),
             ("cd other && git switch -c feat/z && git commit -m x", OK),
         ])
 
