@@ -174,7 +174,7 @@ def check_ticket(t, tickets_by_id, blockers, errors):
         err(f"spec `{spec}` nie istnieje")
 
     if t.status in ("ready", "in-progress", "done"):
-        left = placeholders(t.body)
+        left = placeholders(t.body) if t.status != "done" else []  # done = zapis historyczny, nie poprawiamy
         if left:
             err(f"niewypełnione miejsca z szablonu ({len(left)}), np. `{left[0]}` — uzupełnij albo usuń")
         a = t.layer("A")

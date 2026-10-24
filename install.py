@@ -10,7 +10,7 @@ Kopiowana jest zawartość `template/`. Pliki dzielą się na dwie grupy:
   kopiowane tylko, gdy ich brak; potem należą do projektu i `--upgrade` ich nie rusza.
 
 Pierwsza instalacja, plik projektu różni się od pliku trybik-engine:
-- `.gitignore` — dopisuje brakujące linie trybik-engine;
+- `.gitignore`, `.gitattributes` — dopisuje brakujące linie trybik-engine;
 - `.env.example` i workflowy w `.github/workflows/` — zostaje wersja projektu (workflow scala T-001);
 - pozostałe — wersja projektu → `<plik>.pre-kit`, na jej miejsce wersja trybik-engine (scalenie: docs/runbooks/adoption.md).
 
@@ -160,8 +160,8 @@ def main(argv):
             new += 1
         elif filecmp.cmp(src, dst, shallow=False):
             same += 1
-        elif rel == ".gitignore":
-            appended = append_missing(src, dst)
+        elif rel in (".gitignore", ".gitattributes"):
+            appended += append_missing(src, dst)
         elif upgrade and not kit_owned(rel):
             if rel == ".claude/settings.json":
                 settings = settings_news(src, dst)
@@ -183,7 +183,7 @@ def main(argv):
     print(f"trybik-engine {version()} {action} w {target}: nowe pliki {new}, identyczne {same}"
           + (f", zaktualizowane {updated}." if upgrade else "."))
     if appended:
-        print(f"- .gitignore: dopisano {appended} linii trybik-engine")
+        print(f"- .gitignore/.gitattributes: dopisano {appended} linii trybik-engine")
     for r in kept:
         note = " (workflow trybik-engine pominięty — scalenie w T-001)" if r.startswith(WORKFLOWS) else ""
         print(f"- zostaje wersja projektu: {r}{note}")

@@ -68,6 +68,14 @@ class Tickets(ProjectCase):
         code, out = self.check("--check", "T-001")
         self.assertEqual(code, 0, out)
 
+    def test_done_ticket_with_placeholder_stays_green(self):
+        p = self.ticket(status="done")
+        p.write_text(p.read_text(encoding="utf-8").replace("- [ ] AC1", "- [x] AC1").replace("- [ ] AC2", "- [x] AC2")
+                     + "\n## Uwagi\n- ...\n", encoding="utf-8")
+        self.py("tools/docs_check.py", "--write")
+        code, out = self.check()
+        self.assertEqual(code, 0, out)
+
     def test_dependency_on_dropped(self):
         self.ticket("T-001", status="dropped")
         self.ticket("T-002", depends="T-001")
