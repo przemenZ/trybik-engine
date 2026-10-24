@@ -1,0 +1,29 @@
+name: CI
+
+# Całe sprawdzenie jest w tools/ci.sh (to samo uruchamia się lokalnie); tu tylko przygotowanie środowiska.
+# CI rusza dla każdego PR; przy samej dokumentacji tools/ci.sh pomija testy, lint i typy (ok. 1 min).
+# Gdy GitHub nie uruchomi testów (brak minut), agent sprawdza PR lokalnie `bash tools/ci.sh`,
+# a automat git (.claude/hooks/guard_git.py) pilnuje tego przy `gh pr merge`.
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+        with: { fetch-depth: 0 }  # pełna historia: tools/ci.sh porównuje PR z gałęzią docelową
+      # Przygotowanie stosu — uzupełnia T-001 wg ADR-0001, np.:
+      # - uses: actions/setup-python@v6
+      #   with: { python-version: "3.12" }
+      # - run: pip install uv && uv sync
+      - run: bash tools/ci.sh

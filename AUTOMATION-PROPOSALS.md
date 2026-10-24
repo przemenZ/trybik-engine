@@ -30,9 +30,9 @@ Wdrożone: `tools/ci.sh` (docs_check + komendy stosu z T-001) uruchamiany przez 
 
 ## 3. Subagenci jako pliki
 `.claude/agents/{implementer,tester,reviewer}.md`:
-- ✔ **tester** — model tańszy (`sonnet`); zapis tylko testów na razie z promptu — do rozważenia hook ograniczający zapis do katalogu testów;
-- ✔ **reviewer** — tylko odczyt (`Read`, `Grep`, `Glob`, `Bash` do `git diff`), model mocniejszy (`opus`);
-- ✔ **implementer** — model `sonnet` z advisorem; zapis ograniczony hookiem scope guard do `allow`, bez dostępu do `docs/tickets/` (zapis przez Bash zakazany tylko promptem).
+- ✔ **tester** — model tańszy (`sonnet`); zapis tylko testów i brak dostępu do ticketu wynikają wyłącznie z promptu (ma `Edit`, `Write`, `Bash`) — hooka celowo nie ma, bo Bash i tak by go omijał (dev/decisions.md, W4);
+- ✔ **reviewer** — tylko odczyt z promptu: ma `Bash`, więc technicznie może zmieniać pliki i commitować; model mocniejszy (`opus`);
+- ✔ **implementer** — model `sonnet` z advisorem; zapis ograniczony hookiem scope guard do `allow`, bez odczytu `docs/tickets/` przez Read; Grep, Glob i Bash (`cat`, `sed -i`) hook przepuszcza — zakaz tylko w prompcie.
 Daje to izolację ról „z urzędu", zamiast kopiowania promptów z runbooka. Runbook zostaje jako opis kontraktu.
 
 ## 4. Skills (workflow na żądanie)
@@ -45,7 +45,7 @@ Odchudza to CLAUDE.md do samych niezmienników.
 Izolacja testera ma słabość: testy mogą przechodzić „na pusto". Proponowane przeciwwagi:
 - **mutation testing** (w Pythonie: `mutmut`/`cosmic-ray`) na zmienionych plikach — wynik w raporcie testera; niski wskaźnik = testy za słabe;
 - **property-based** (`hypothesis`) dla czystej logiki (np. podziały kwot, walidacje);
-- **ślad AC → test**: znacznik w testach (`@pytest.mark.ac("T-012.AC2")`) i rozszerzenie `docs_check` o sprawdzenie, że każdy AC ma test (dziś narzędzie sprawdza tylko pokrycie scenariuszami C).
+- **ślad AC → test**: znacznik w testach (nazwa `test_T012_AC2_…` albo `@pytest.mark.ac("T-012.AC2")`) i rozszerzenie `docs_check` o sprawdzenie, że każdy AC ma test (dziś narzędzie sprawdza tylko pokrycie scenariuszami C).
 
 ## 6. Równoległość
 Skoro tickety mają `depends` i `rank`, niezależne `ready` można robić równolegle w osobnych **git worktree** (po jednym agencie na ticket, własny branch). Wymaga: rozłącznych `allow` (narzędzie mogłoby to sprawdzać) i limitu zasobów.
