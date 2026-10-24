@@ -105,6 +105,20 @@ class OnFeature(GuardCase):
         ])
 
 
+class Bootstrap(GuardCase):
+    """Krok 0 kickoff/adoption: pierwsze wypchnięcie `main` idzie przez `gh repo create --push`, nie `git push`."""
+
+    def test_publish_main_from_main(self):
+        self.check([("gh repo create x --private --source=. --push", OK)])
+
+    def test_publish_main_later_from_branch(self):
+        git(self.dir, "switch", "-q", "feat/T-001-x")
+        self.check([
+            ("git switch main && gh repo create x --private --source=. --push && git switch feat/T-001-x", OK),
+            ("git push -u origin main", BLOCK),
+        ])
+
+
 class Crash(ProjectCase):
     def test_crash_is_visible(self):
         r = self.py(".claude/hooks/guard_git.py", input="nie-json")

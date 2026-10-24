@@ -2,7 +2,7 @@
 
 To repo to kit procesu, a nie projekt prowadzony tym procesem.
 - `template/` — ładunek kopiowany do projektów przez `install.py`. Instrukcje w `template/CLAUDE.md` i `template/docs/` są dla agenta w projekcie użytkownika, nie dla Ciebie.
-- Korzeń: `install.py`, `tests/`, `dev/` (decyzje i plany kitu), README, CI kitu (`.github/workflows/kit-tests.yml`).
+- Korzeń: `install.py`, `tests/`, `dev/` (decyzje i plany kitu), README i `HOW-IT-WORKS.md`, CI kitu (`.github/workflows/kit-tests.yml`).
 
 ## Komendy
 - testy: `python3 -m unittest discover -s tests -v` · jeden plik: `python3 -m unittest discover -s tests -p test_guard_git.py -v`
