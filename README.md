@@ -35,6 +35,7 @@ trybik-engine jest efektem iteracyjnej pracy nad aplikacją rozwijaną z agentam
 - [Struktura](#struktura)
 - [Zasady projektowe](#zasady-projektowe)
 - [FAQ](#faq)
+- [Roadmapa](#roadmapa)
 - [Dokumentacja](#dokumentacja)
 - [Współtworzenie](#współtworzenie)
 - [Licencja](#licencja)
@@ -296,6 +297,21 @@ Tak. Automaty dotyczą sesji Claude Code. Dokumenty, szablony i `docs_check.py` 
 Gdy warstwa A jest niejednoznaczna albo dwa dokumenty się wykluczają, gdy potrzebna jest praca poza zakresem lub `allow`, gdy poprawka po review albo testach nie przechodzi po pierwszej próbie, i przed nową decyzją trudną do odwrócenia (wtedy najpierw powstaje ADR). Szczegóły: [`docs/runbooks/delivery.md`](docs/runbooks/delivery.md).
 
 </details>
+
+## Roadmapa
+
+Wdrożone: hooki `Stop` i git, scope guard, agenci `implementer`, `tester` i `reviewer`, skille `/deliver` i `/ticket`, CI z lokalnym zapasem. W planach:
+
+- [ ] Hook `SessionStart`: na starcie sesji wstrzykuje stan projektu i kolejny ticket.
+- [ ] Hook `PostToolUse`: lint i formatowanie po każdej edycji.
+- [ ] Hook ograniczający testera do zapisu w katalogu testów.
+- [ ] Skill `/triage-review`: każde znalezisko z przeglądu dostaje rozstrzygnięcie.
+- [ ] Jakość testów: mutation testing, testy property-based i sprawdzanie, że każde kryterium akceptacji ma test, a nie tylko scenariusz.
+- [ ] Równoległe dostarczanie niezależnych ticketów w osobnych git worktree.
+- [ ] Krok „uruchom i zobacz” przed merge dla zmian w UI i CLI.
+- [ ] Pętla uczenia: błędy powtarzające się w review zamieniane na reguły lintera lub hooka.
+
+Szczegóły i uzasadnienia: [`AUTOMATION-PROPOSALS.md`](AUTOMATION-PROPOSALS.md).
 
 ## Dokumentacja
 
