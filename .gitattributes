@@ -1,0 +1,2 @@
+# skrypty bash muszą mieć LF także po checkoutcie na Windowsie (core.autocrlf)
+*.sh text eol=lf
