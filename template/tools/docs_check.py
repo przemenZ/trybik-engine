@@ -81,7 +81,10 @@ def parse_front(text):
             continue
         key, sep, value = line.partition(":")
         if sep:
-            fields[key.strip()] = value.strip()
+            value = value.strip()
+            if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
+                value = value[1:-1]  # `title: "API: logowanie"`
+            fields[key.strip()] = value
     return fields, m.group(2)
 
 
@@ -164,11 +167,16 @@ def check_ticket(t, tickets_by_id, blockers, errors):
     for dep in t.depends:
         if dep not in tickets_by_id:
             err(f"depends: nieistniejący ticket {dep}")
+        elif tickets_by_id[dep].status == "dropped" and t.status not in ("done", "dropped"):
+            err(f"depends: {dep} jest dropped — usuń zależność albo wskaż ticket zastępczy")
     spec = t.fields.get("spec", "")
     if spec and not (ROOT / spec).exists():
         err(f"spec `{spec}` nie istnieje")
 
     if t.status in ("ready", "in-progress", "done"):
+        left = placeholders(t.body)
+        if left:
+            err(f"niewypełnione miejsca z szablonu ({len(left)}), np. `{left[0]}` — uzupełnij albo usuń")
         a = t.layer("A")
         if a is None:
             err("brak warstwy `# A. …`")
@@ -203,6 +211,20 @@ def check_ticket(t, tickets_by_id, blockers, errors):
         open_acs = [ac for mark, ac in t.criteria() if mark == " "]
         if open_acs:
             err(f"done, ale niezaznaczone kryteria: {', '.join(open_acs)}")
+
+
+PLACEHOLDER_PREFIX = re.compile(r"^(?:[-*]|\d+\.)?\s*(?:\[[ xX]\]\s*)?(?:\[[^\]]*\]\s*)?(?:AC\d+:\s*)?(?:\*\*[^*]+\*\*\s*)?")
+
+
+def placeholders(body):
+    """Linie, których treść to `...` z szablonu (np. `- ...`, `- [ ] AC2: ...`, `1. [AC1] ...`, `- **In:** ...`)."""
+    body = re.sub(r"<!--.*?-->", "", body or "", flags=re.S)
+    out = []
+    for line in body.splitlines():
+        s = line.strip()
+        if s and PLACEHOLDER_PREFIX.sub("", s, count=1).startswith(("...", "…")):
+            out.append(s)
+    return out
 
 
 def find_cycles(tickets_by_id, errors):
@@ -257,7 +279,8 @@ def render_backlog(tickets, blockers):
         head = "| ID | Tytuł | Czeka na |" if with_wait else "| ID | Tytuł |"
         out += [head, "|---|---|---|" if with_wait else "|---|---|"]
         for t in rows:
-            cells = f"| {link(t)} | {t.title} |"
+            title = t.title.replace("|", "\\|")  # `|` w tytule rozbiłby tabelę
+            cells = f"| {link(t)} | {title} |"
             out.append(cells + (f" {waiting(t)} |" if with_wait else ""))
         return out + [""]
 

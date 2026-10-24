@@ -7,7 +7,8 @@ rank: 10
 # niższy = wcześniej; kolejność ustala właściciel produktu
 depends:
 # T-001, T-002 (kolejny ticket do realizacji = najniższy rank spośród ready z ukończonymi zależnościami)
-spec: docs/specs/<feature>.md
+spec:
+# docs/specs/<funkcja>.md; puste, gdy ticket nie ma speca (np. kind: plain)
 kind: logic
 # logic = ma warstwę C i osobny test; plain = docs/config/chore/czysty layout (bez C)
 allow:
