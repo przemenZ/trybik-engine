@@ -1,6 +1,6 @@
 # NNNN. Tytuł decyzji
 
-- Status: Proposed | Accepted | Superseded by NNNN
+- Status: proposed | accepted | superseded by NNNN
 - Data: RRRR-MM-DD
 - Supersedes: NNNN (jeśli dotyczy)
 
@@ -16,4 +16,4 @@ Co robimy (zdania oznajmujące).
 ## Konsekwencje
 Co się upraszcza, co się komplikuje, co trzeba zmienić w docs/kodzie.
 
-<!-- Zaakceptowanego ADR nie edytujemy. Zmiana kursu = nowy ADR z `Supersedes`, stary dostaje `Superseded by`. -->
+<!-- Zaakceptowanego ADR nie edytujemy. Zmiana kursu = nowy ADR z `supersedes NNNN`, stary dostaje `superseded by NNNN`. -->

@@ -49,7 +49,7 @@ trybik-engine jest efektem iteracyjnej pracy nad aplikacją rozwijaną z agentam
 - **Właściciel decyduje, agent wykonuje.** Ticket przechodzi z `draft` do `ready` tylko po akceptacji właściciela i nie może być `ready`, dopóki blokuje go otwarte pytanie.
 - **Autonomia w granicach zakresu.** Ticket `ready` to zgoda na całą pracę w jego zakresie. Agent zatrzymuje się tylko w zdefiniowanych sytuacjach STOP.
 - **Zero zależności.** Narzędzia procesu potrzebują tylko Pythona ≥ 3.8 (biblioteka standardowa) i gita. Stos projektu wybierasz sam (ADR-0001).
-- **Oszczędność minut CI.** PR z samą dokumentacją nie uruchamia CI na GitHubie. Gdy GitHub nie uruchomi testów, ten sam skrypt przechodzi lokalnie, a automat git to weryfikuje.
+- **Oszczędność minut CI.** PR z samą dokumentacją pomija na GitHubie testy, lint i typy. Gdy GitHub nie uruchomi testów (brak minut), ten sam skrypt przechodzi lokalnie, a automat git to sprawdza.
 
 ## Wymagania
 
@@ -58,7 +58,10 @@ trybik-engine jest efektem iteracyjnej pracy nad aplikacją rozwijaną z agentam
 | [Claude Code](https://claude.com/claude-code) | prowadzi proces: hooki, subagenci, skille |
 | Python ≥ 3.8 | instalator i `tools/docs_check.py`, tylko biblioteka standardowa |
 | git | branche, commity, historia ticketów |
-| [GitHub CLI](https://cli.github.com/) (`gh`) | PR-y, status CI, squash merge |
+| [GitHub CLI](https://cli.github.com/) (`gh`), zalogowany (`gh auth status`) | PR-y, status CI, squash merge; bez logowania automat git blokuje `gh pr merge` |
+| advisor w Claude Code (`/advisor`, opcjonalnie) | implementer konsultuje z mocniejszym modelem trudne decyzje; bez niego raport kończy się `Advisor: niedostępny` |
+
+**Windows:** hooki uruchamia Git Bash (bez niego Claude Code przełącza się na PowerShell i hooki nie działają). Pythona nie trzeba wołać jako `python3`: hook startu sesji wykrywa `python3`, `python` albo `py -3` i podaje agentowi właściwą komendę. Skrypty piszą w UTF-8 niezależnie od kodowania systemu.
 
 ## Szybki start
 
@@ -218,17 +221,17 @@ Tickety `kind: plain` (dokumentacja, konfiguracja, layout) pomijają testera i r
 | Automat | Co wymusza |
 |---|---|
 | Hook `Stop` (`stop_check.py`) | Przed zakończeniem odpowiedzi agenta uruchamia `docs_check`. Błędy (poza szkicami) wracają do agenta, najwyżej raz na turę. |
-| Hook git (`guard_git.py`) | Blokuje commit, lokalne scalanie i push wprost na `main`/`master` (poza pierwszym commitem) oraz force push. Wpuszcza `gh pr merge` tylko po zielonym CI na GitHubie albo po lokalnym `tools/ci.sh` dla tego samego commita. |
-| Scope guard (`scope_guard.py`) | Agent `implementer` zapisuje tylko pliki z `allow` ticketu i nie ma dostępu do `docs/tickets/`. |
-| Uprawnienia (`settings.json`) | `.env` jest niedostępny, `BACKLOG.md` zmienia się tylko przez `--write`, a `rm -rf`, `git reset --hard` i `git clean` wymagają potwierdzenia. |
+| Hook git (`guard_git.py`) | Blokuje commit, lokalne scalanie, przepisywanie historii i push na `main`/`master` (poza pierwszym commitem) oraz force push, także przez `+refspec`, `cd` albo `git -C`. Wpuszcza `gh pr merge` tylko po zielonym CI na GitHubie albo po lokalnym `tools/ci.sh` dla tego samego commita. |
+| Scope guard (`scope_guard.py`) | Agent `implementer` zapisuje (Edit/Write) tylko pliki z `allow` ticketu i nie czyta (Read) `docs/tickets/`. |
+| Uprawnienia (`settings.json`) | `.env`, `.env.local` i podobne są niedostępne dla Read (Bash `cat` to omija), `BACKLOG.md` zmienia się tylko przez `--write`, a `rm -rf`/`-fr`/`-r`, `git reset --hard` i `git clean` wymagają potwierdzenia. |
 | `docs_check.py` | Sprawdza pola i statusy ticketów, zależności, pokrycie kryteriów scenariuszami, blokujące pytania, limit `STATE.md` i aktualność `BACKLOG.md`. |
 
 ## CI
 
 - **`tools/ci.sh`** jest jedynym miejscem z komendami sprawdzającymi. Na start uruchamia walidację dokumentacji, a testy, lint i typy dopisuje T-001. To samo uruchamia się lokalnie i na GitHubie.
-- **`.github/workflows/ci.yml`** tylko przygotowuje środowisko i woła `tools/ci.sh` na każdym PR z kodem. PR z samą dokumentacją pomija.
-- **Gdy GitHub nie uruchomi testów** (PR z dokumentacją, brak minut), agent uruchamia `bash tools/ci.sh` lokalnie, a wynik zapisuje się dla tego commita. Automat git przepuszcza `gh pr merge` po zielonym CI na GitHubie albo po lokalnym przejściu tego samego commita. Błąd testów na GitHubie blokuje zawsze.
-- **Prywatne repo na darmowym planie** nie ma ochrony gałęzi, więc tę rolę wobec agenta pełni automat git. Właściciel nadal może scalić PR ręcznie w przeglądarce.
+- **`.github/workflows/ci.yml`** tylko przygotowuje środowisko i woła `tools/ci.sh` na każdym PR. Przy samej dokumentacji skrypt pomija testy, lint i typy (ok. 1 minuta).
+- **Gdy GitHub nie uruchomi testów** (brak minut), agent uruchamia `bash tools/ci.sh` lokalnie, a wynik zapisuje się dla tego commita. Automat git przepuszcza `gh pr merge` po zielonym CI na GitHubie albo po lokalnym przejściu tego samego commita. Błąd testów na GitHubie blokuje zawsze. Lokalny wynik (`.git/ci-passed`) to deklaracja agenta, a nie dowód.
+- **Automaty to barierki dla agenta, a nie zabezpieczenie.** Agent, który chce je obejść (Bash, aliasy, skrypty), da radę. Ochronę gałęzi po stronie GitHuba (reguły, wymagany PR) ustawiasz w projekcie sam, jeśli plan na to pozwala.
 
 ## Struktura
 
@@ -290,7 +293,7 @@ Nie. Python obsługuje tylko narzędzia procesu (instalator, `docs_check.py`, ho
 <details>
 <summary><b>Czy działa z prywatnym repo na darmowym planie GitHuba?</b></summary>
 
-Tak. Brak ochrony gałęzi zastępuje automat git, a CI pomija PR-y z samą dokumentacją, żeby oszczędzać minuty. Gdy minut zabraknie, obowiązuje lokalne `bash tools/ci.sh`.
+Tak. Brak ochrony gałęzi wobec agenta częściowo zastępuje automat git, a PR-y z samą dokumentacją zużywają ok. minuty CI. Gdy minut zabraknie, obowiązuje lokalne `bash tools/ci.sh`.
 
 </details>
 

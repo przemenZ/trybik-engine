@@ -18,10 +18,18 @@
     "ask": [
       "Bash(git reset --hard *)",
       "Bash(git clean *)",
-      "Bash(rm -rf *)"
+      "Bash(rm -rf *)",
+      "Bash(rm -fr *)",
+      "Bash(rm -r *)",
+      "Bash(rm -R *)",
+      "Bash(rm -Rf *)"
     ],
     "deny": [
       "Read(./.env)",
+      "Read(./.env.local)",
+      "Read(./.env.*.local)",
+      "Read(./.env.production)",
+      "Read(./.env.development)",
       "Edit(/docs/BACKLOG.md)"
     ]
   },

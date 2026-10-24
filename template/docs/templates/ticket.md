@@ -73,7 +73,7 @@ Czego NIE robić (bez nice-to-have, bez optymalizacji „przy okazji", bez test�
 
 ## Struktura testów
 - Przewaga testów jednostkowych (szybkie, logika), mniej integracyjnych, E2E tylko dla pełnego flow, jeśli niezbędny.
-- Nazwa/oznaczenie testu zawiera ID kryterium (np. `T-012.AC2`), żeby dało się sprawdzić pokrycie.
+- Nazwa testu zawiera ID kryterium w formie `TNNN_ACn` (np. `test_T012_AC2_zle_haslo…`), żeby dało się sprawdzić pokrycie; w tagach i metadanych testu dopuszczalne `T-012.AC2`.
 
 ## Anty-wzorce
 - testowanie implementacji lub frameworka; scenariusze typu „mockuj X, wywołaj Y"; ciężki kontekst aplikacji do testu samej logiki.

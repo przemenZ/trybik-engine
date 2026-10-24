@@ -26,9 +26,7 @@ dist/
 build/
 *.egg-info/
 
-# Edytory / system
-.idea/
-.vscode/
+# System (ustawienia edytorów — .idea/, .vscode/ — to decyzja projektu)
 .DS_Store
 
 # Claude Code: ustawienia prywatne (wspólne są w .claude/settings.json)

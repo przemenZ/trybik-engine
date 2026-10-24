@@ -18,7 +18,7 @@ Z `docs/templates/product.md`. Rozmowa z właścicielem: problem, użytkownicy, 
 
 ## 2. Stos → `docs/adr/0001-stos-technologiczny.md`
 Z `docs/templates/adr.md`: język, framework, baza, uruchamianie i wdrożenie (gdzie działa aplikacja), narzędzia test/lint/typy/format. 2–3 opcje z rekomendacją, dopasowane do ograniczeń z wizji.
-**STOP: akceptacja** (`Status: Accepted`). Potem uzupełnij w `CLAUDE.md` komendy (część oznaczysz „do potwierdzenia w T-001”) i scope commitów.
+**STOP: akceptacja** (`Status: accepted`). Potem uzupełnij w `CLAUDE.md` komendy (część oznaczysz „do potwierdzenia w T-001”) i scope commitów.
 
 ## 3. Architektura → `docs/architecture/overview.md`
 Z `docs/templates/architecture.md`: moduły i granice, przepływ danych, konwencje (język kodu/commitów/dokumentacji, błędy, logi, konfiguracja), testy.

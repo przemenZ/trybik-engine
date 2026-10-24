@@ -27,7 +27,7 @@ Kontrakt (role, STOP, oszczędność kontekstu, brak CI na GitHubie): `docs/runb
 
 ## 5. Domknięcie
 - AC odhaczone, `status: done`, dokumenty z „Docs do aktualizacji”, `STATE.md` jeśli trzeba, `python3 tools/docs_check.py --write`.
-- `bash tools/ci.sh`, commit, push, `gh pr create`, `gh pr checks --watch`, zielone → `gh pr merge --squash`. GitHub nie uruchomił testów → `delivery.md`, ostatnia sekcja.
+- `bash tools/ci.sh`, commit, push, `gh pr create`, `gh pr checks --watch`, zielone → `gh pr merge --squash`. GitHub nie uruchomił testów → `bash tools/ci.sh` lokalnie, `gh pr comment --body "tools/ci.sh lokalnie: OK (<sha>)"`, potem merge (`delivery.md`, ostatnia sekcja).
 
 ## 6. Raport dla właściciela (≤8 linii)
 Ticket i PR (scalony / czeka i dlaczego), odstępstwa i odrzucone uwagi review, nowe pytania lub szkice ticketów, a na końcu linia `Advisor:` implementatora bez zmian (przy implementacji w sesji głównej: `Advisor (sesja główna): …` w tej samej formie).

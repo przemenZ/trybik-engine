@@ -37,6 +37,8 @@ Nowy plik md trafia do katalogu z tabeli, nie do roota. Spec nie wylicza ticket�
 | draft → ready | **właściciel** | po akceptacji, pytania zamknięte (`docs_check.py --check T-NNN` przechodzi) |
 | ready → in-progress | agent | początek implementacji (w pierwszym commicie brancha) |
 | in-progress → done | agent | **w tym samym PR co kod**: AC odhaczone, `--write`, STATE jeśli trzeba |
+| in-progress → draft | agent | STOP: niejasność zmienia zakres; pytanie w `QUESTIONS.md` z `blokuje:` |
+| dowolny → dropped | **właściciel** | rezygnacja; zależne tickety dostają nowe `depends` (`docs_check` to wymusza) |
 
 Zmiana statusu nie wymaga osobnego PR „docs: done" ani przenoszenia plików — ticket zostaje w `docs/tickets/`, a `BACKLOG.md` jest widokiem. Po zmianie ticketów/pytań: `python3 tools/docs_check.py --write`.
 
@@ -63,10 +65,12 @@ Plik `docs/reviews/RRRR-MM-DD-<zakres>.md`; znaleziska mają ID `R-1…` i **roz
 - Koniec: ticket/pytania/STATE zaktualizowane, `docs_check` zielony, commit na branchu.
 - Automaty (`.claude/settings.json`, skrypty w `.claude/hooks/`):
   - przed zakończeniem odpowiedzi `docs_check`; błędy (poza szkicami) wracają do agenta, najwyżej raz na turę;
-  - zakaz commitu, lokalnego scalania i wypychania wprost na `main`/`master` (poza pierwszym commitem) oraz force push;
+  - zakaz commitu, lokalnego scalania, przepisywania (rebase, reset, cherry-pick…) i wypychania na `main`/`master` (poza pierwszym commitem) oraz force push;
   - `gh pr merge` do `main` tylko po zielonym CI na GitHubie; gdy GitHub testów nie uruchomił — po `tools/ci.sh` dla tego samego commita;
-  - `.env` niedostępny, `BACKLOG.md` tylko przez `--write`, destrukcyjne komendy wymagają potwierdzenia;
-  - agent `implementer` zapisuje tylko pliki z `allow` ticketu i nie ma dostępu do `docs/tickets/` (hook w jego definicji).
+  - `.env*` (poza `.env.example`) niedostępne dla Read, `BACKLOG.md` tylko przez `--write`, destrukcyjne komendy wymagają potwierdzenia;
+  - agent `implementer` zapisuje (Edit/Write) tylko pliki z `allow` ticketu i nie czyta (Read) `docs/tickets/` (hook w jego definicji).
+- Automaty to barierki dla agenta, który współpracuje, a nie zabezpieczenie: Bash (`cat`, `sed -i`), Grep, aliasy gita i skrypty je omijają, a lokalny wynik `tools/ci.sh` (`.git/ci-passed`) to deklaracja agenta, nie dowód. Tester i reviewer mają ograniczenia tylko w prompcie. Ochronę gałęzi po stronie GitHuba ustawia projekt.
+- Na Windowsie hooki wymagają Git Bash; komendę Pythona (`python3`/`python`/`py -3`) wykrywa hook startu sesji.
 
 ## Higiena
 - Sekrety tylko w `.env` (poza gitem), wzorzec w `.env.example`.
