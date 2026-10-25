@@ -53,6 +53,17 @@ Treść ma trzy warstwy:
 - Cykl życia: `draft → ready → in-progress → done` (albo `dropped`). Status zmienia się w tym samym PR co kod.
 - Ticket nie może być `ready`, dopóki blokuje go otwarte pytanie w `QUESTIONS.md` (pole `blokuje:`).
 
+## Skille
+
+Skill to plik `.claude/skills/<nazwa>/SKILL.md`. Claude Code ładuje na starcie tylko `name` i `description` z frontmattera. Treść wczytuje dopiero przy użyciu: gdy wpiszesz `/nazwa` albo gdy agent sam uzna, że zadanie pasuje do `description`. Dlatego `description` mówi, co skill robi i kiedy go użyć.
+
+| Skill | Co robi | Kiedy | Opis |
+|---|---|---|---|
+| `/ticket` | Pisze szkic ticketu (`draft`) ze speca, znaleziska z review albo Twojej prośby: podział na wycinki, plik przez `docs_check.py --new`, samoocena warstw A/B/C, pytania do `QUESTIONS.md`. | Brak ticketu `ready`, prośba o tickety do funkcji, praca poza zakresem w trakcie `/deliver`. | [`ticket/SKILL.md`](template/.claude/skills/ticket/SKILL.md) |
+| `/deliver` | Prowadzi ticket od startu do merge: implementer → tester → reviewer → PR → CI → domknięcie. | „Dostarcz kolejny feature”, „dostarcz T-NNN”, dokończenie ticketu `in-progress`. | [`deliver/SKILL.md`](template/.claude/skills/deliver/SKILL.md), kontrakt: [`delivery.md`](template/docs/runbooks/delivery.md) |
+
+Skill zawiera tylko kolejność kroków i komendy. Zasady (role, STOP, struktura ticketu) są w runbookach i szablonach, na które skill wskazuje. Pliki pomocnicze leżą obok `SKILL.md` (np. `deliver/ticket_parts.py`).
+
 ## Role agentów
 
 Sesja główna przekazuje subagentowi tylko jego część ticketu (`ticket_parts.py`). Izolację wymusza więc mechanizm, a nie prośba w prompcie.

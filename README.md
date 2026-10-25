@@ -40,7 +40,7 @@ Dlaczego tak: agent, któremu da się tylko instrukcje, prędzej czy później j
 
 **Windows:** zainstaluj Git for Windows, bo zawiera Git Bash. Bez niego Claude Code używa PowerShella i automaty nie działają. Python może się uruchamiać jako `python` albo `py -3` zamiast `python3`. Agent wykryje to sam.
 
-Opcjonalnie: `/advisor` w Claude Code. Agent konsultuje wtedy trudne decyzje z mocniejszym modelem.
+Zalecane: włącz advisora w Claude Code (komenda `/advisor`, wybierz mocniejszy model, np. Opus). trybik-engine z niego korzysta: agent konsultuje z nim trudne decyzje (niejasny ticket, zmiana zakresu, nieudana poprawka). Bez advisora proces działa, ale te decyzje agent podejmuje sam.
 
 ## Szybki start
 
