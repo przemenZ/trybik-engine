@@ -26,6 +26,7 @@ Na każdy ticket: `python3 tools/docs_check.py --new "Tytuł"` → ścieżka now
 Treść sprawdzasz sam (strukturę sprawdza `--check` w kroku 6):
 - [ ] A: bez ścieżek, klas i frameworków; „Out” konkretny; każde AC to jedno obserwowalne zachowanie.
 - [ ] B: „Kontekst do przeczytania” to konkretne ścieżki i wzorzec, nie „przejrzyj repo”; „Artefakty” zgodne z `allow`; „Docs do aktualizacji” zawiera spec, gdy zmienia się zachowanie.
+- [ ] B wskazuje bibliotekę → ona i jej wymagane zależności są w projekcie. Jeśli nie: manifest zależności i lockfile w „Artefakty” i `allow` (dodanie biblioteki ocenia właściciel przy akceptacji ticketu) albo pytanie w `docs/QUESTIONS.md` (krok 5).
 - [ ] C (`logic`): zrozumiała bez B (żadnych nazw plików i klas z B); scenariusze z konkretnymi danymi i oczekiwanym wynikiem.
 - [ ] Rozmiar: „Artefakty” ≤10 plików; więcej → podziel.
 - [ ] Każda niejasność w A rozstrzygnięta w „Decyzje” (z powodem) albo zamieniona w pytanie (krok 5). Nie zgadujesz.

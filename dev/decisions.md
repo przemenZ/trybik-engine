@@ -2,6 +2,12 @@
 
 Każdy wpis: co zrobiono z punktem przeglądu albo propozycją i dlaczego. Najnowsze na górze.
 
+## Brakujące zależności (branch `feat/missing-deps-rule`)
+
+| Problem | Decyzja | Co i dlaczego |
+|---|---|---|
+| coach-app: brak `workbox-window` (wymaganego przez `useRegisterSW` z vite-plugin-pwa), `package.json`/lockfile poza `allow`; implementer napisał własną rejestrację service workera, review znalazło w niej wyścig | zrobione | Nowy STOP w `delivery.md`, reguła w `implementer.md` i w `CLAUDE.md` projektu: brak biblioteki → pytanie do właściciela (nazwa, wersja, po co, alternatywa), nie zamiennik od zera. Właściciel woli ocenić i dodać bibliotekę niż utrzymywać własny kod. `/ticket` w samoocenie B sprawdza, czy wskazana biblioteka i jej wymagane zależności są w projekcie; jeśli nie — manifest i lockfile w „Artefakty” i `allow` albo pytanie w `QUESTIONS.md`. Bez hooka: brak zależności wychodzi dopiero przy buildzie, regułę egzekwuje instrukcja. |
+
 ## README dla człowieka (branch `docs/readme`)
 
 | Problem | Decyzja | Co i dlaczego |

@@ -27,6 +27,7 @@ Sesja główna daje subagentowi jako prompt wynik `python3 .claude/skills/delive
 ## STOP (zatrzymaj się i pytaj)
 - A jest niejednoznaczne albo dwa dokumenty się wykluczają → wpis w `QUESTIONS.md` (ticket wraca do `draft`, jeśli zmienia zakres).
 - Potrzebna praca poza zakresem/`allow`.
+- Rozwiązanie wymaga biblioteki, której nie ma w projekcie (albo zależności wymaganej przez wskazaną w B) → nie pisz zamiennika od zera: zapytaj właściciela o dodanie (nazwa, wersja, po co, alternatywa bez niej). Właściciel ocenia i decyduje.
 - Poprawka po review lub testach nie przechodzi po 1 próbie.
 - Nowa decyzja trudna do odwrócenia → najpierw ADR i potwierdzenie.
 

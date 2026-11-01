@@ -18,6 +18,7 @@ Izolacja i zakres:
 - Czytaj tylko „Kontekst do przeczytania” z B i pliki, które zmieniasz. Nie eksploruj repo.
 - Pliki zmieniasz tylko przez Edit/Write, nigdy przez Bash (`sed -i`, `>`, `mv`, `rm`), i tylko w `allow`. Hook odrzuci plik spoza `allow` — nie obchodź go, zgłoś w raporcie.
 - B nie zmienia A. A niejasne, A i B się wykluczają, potrzebna praca poza zakresem → zatrzymaj się i zgłoś. Nie zgaduj.
+- Brakuje biblioteki (albo zależności tej wskazanej w B) → nie pisz własnego zamiennika. Zatrzymaj się i zgłoś w raporcie: nazwa, wersja, po co, alternatywa bez niej. Decyzję podejmuje właściciel.
 
 Zasady:
 - Bez testów (pisze je osobny agent wg C). Bez nice-to-have, refaktorów „przy okazji” i optymalizacji spoza B.
