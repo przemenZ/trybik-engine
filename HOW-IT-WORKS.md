@@ -80,7 +80,7 @@ Jeśli w Claude Code jest dostępny `/advisor`, implementer konsultuje z mocniej
 
 ### Kiedy agent się zatrzymuje (STOP)
 
-Gdy warstwa A jest niejednoznaczna albo dwa dokumenty się wykluczają, gdy potrzebna jest praca poza zakresem lub `allow`, gdy poprawka po review albo testach nie przechodzi po pierwszej próbie, i przed nową decyzją trudną do odwrócenia (wtedy najpierw powstaje ADR). Szczegóły: [`docs/runbooks/delivery.md`](template/docs/runbooks/delivery.md).
+Gdy warstwa A jest niejednoznaczna albo dwa dokumenty się wykluczają, gdy potrzebna jest praca poza zakresem lub `allow`, gdy brakuje biblioteki (agent pyta o jej dodanie zamiast pisać własny zamiennik), gdy poprawka po review albo testach nie przechodzi po pierwszej próbie, i przed nową decyzją trudną do odwrócenia (wtedy najpierw powstaje ADR). Szczegóły: [`docs/runbooks/delivery.md`](template/docs/runbooks/delivery.md).
 
 ## Bramki jakości
 
