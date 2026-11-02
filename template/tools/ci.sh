@@ -6,6 +6,9 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
+# Lokalnie CI czeka, aż skończą subagenci (mało RAM-u: jeden ciężki proces naraz); na GitHubie (CI=true) bez blokady.
+[ -n "${CI:-}" ] || bash .claude/hooks/py.sh .claude/hooks/subagent_lock.py --check
+
 tree=""
 if [ -z "${CI:-}" ] && git rev-parse --git-dir >/dev/null 2>&1 && [ -z "$(git status --porcelain)" ]; then
   tree=$(git rev-parse -q --verify 'HEAD^{tree}' 2>/dev/null || true)

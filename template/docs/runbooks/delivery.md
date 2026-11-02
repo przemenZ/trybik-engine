@@ -41,6 +41,7 @@ Sesja główna: nie na starcie (ticket `ready` ma już zakres i decyzje). Wołaj
 - B podaje konkretne ścieżki i wzorzec („jak `X`"), nie eksplorację repo.
 - Raport agenta ≤10 linii: zmienione pliki, odstępstwa, pytania. Bez cytowania kodu.
 - Agenci uruchamiają tylko własny zakres testów; pełny zestaw raz, na domknięciu.
+- `tools/ci.sh` uruchamia sesja główna, nie subagent: lokalne CI jest wstrzymane, dopóki działa jakikolwiek subagent (hooki `SubagentStart`/`SubagentStop`); blokadę wymusza się usunięciem `.git/subagents-active`.
 - Mały ticket (≤3 pliki, trywialny): implementacja w sesji głównej; tester nadal osobny, jeśli jest logika.
 - Bug z testów → poprawka w sesji głównej, nie w agencie testowym.
 - `kind: plain` (docs, config, chore, layout): bez C, testera i review.

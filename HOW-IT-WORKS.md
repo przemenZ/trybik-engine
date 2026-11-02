@@ -108,7 +108,7 @@ twoj-projekt/
 ├── CLAUDE.md                    # wejście dla agenta: start sesji, komendy, zasady
 ├── .claude/
 │   ├── settings.json            # hooki i uprawnienia
-│   ├── hooks/                   # py.sh, stop_check, guard_git, scope_guard
+│   ├── hooks/                   # py.sh, stop_check, guard_git, scope_guard, subagent_lock
 │   ├── agents/                  # implementer, tester, reviewer
 │   └── skills/                  # /deliver, /ticket
 ├── docs/
