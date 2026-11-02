@@ -46,6 +46,7 @@ Zewnętrzny przegląd całego repo: 3 punkty krytyczne (K), 6 ważnych (W), 14 d
 | D12 | `cd X && …`, `git switch -` | zrobione | w ramach K3. |
 | D13 | `.git/ci-passed` rośnie bez końca | zrobione | ostatnie 200 wpisów. |
 | D14 | `.idea/`, `.vscode/` w `.gitignore` projektu | zrobione | usunięte; to decyzja projektu. |
+| S1 | jeden ciężki proces naraz (mało RAM-u): lokalne `tools/ci.sh` w trakcie pracy subagentów | zrobione | Hooki `SubagentStart`/`SubagentStop` prowadzą wpisy w `<git-common-dir>/subagents-active`; `ci.sh` lokalnie (bez `CI`) kończy się błędem, gdy jest wpis młodszy niż 30 min. Wpisy starsze są ignorowane (przerwany subagent), wymuszenie = usunięcie pliku. CI uruchamia sesja główna, nie subagent. `start`/`stop` zawsze exit 0; awaria `--check` jest logowana (`hooklib.crashed`), ale **nie blokuje CI** (fail-open, inaczej błąd w blokadzie zatrzymałby `ci.sh` przez `set -e`). Klucz wpisu: `agent_id`, potem `session_id`, potem `?` (wg dokumentacji i zgłoszeń oba zdarzenia mają `agent_id`; osierocony `SubagentStop` jest nieszkodliwy). **Niezweryfikowane w prawdziwym `/deliver`** w tym repo: do sprawdzenia w projekcie z kitem. |
 
 Znane ograniczenia, które zostają:
 - Hook git nie widzi poleceń w `bash -c "…"`, aliasów gita ani skryptów.
