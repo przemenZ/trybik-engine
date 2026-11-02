@@ -47,7 +47,8 @@ def read_entries(f):
 
 def write_entries(f, entries):
     tmp = f.with_name(f.name + f".{os.getpid()}.tmp")
-    tmp.write_text("".join(f"{t} {i} {a}\n" for t, i, a in entries), encoding="utf-8", newline="\n")
+    with open(tmp, "w", encoding="utf-8", newline="\n") as fh:  # open(): write_text(newline=) dopiero od 3.10
+        fh.write("".join(f"{t} {i} {a}\n" for t, i, a in entries))
     os.replace(tmp, f)  # atomowo: równoległe SubagentStart
 
 
